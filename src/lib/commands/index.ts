@@ -23,7 +23,7 @@ export function parseCommand(input: string) {
  */
 function dispatchCommand(cmd: string, ...args: string[]) {
 
-  if (!cmd) return;
+  if (!cmd) return "";                      // If no command is entered, just return an empty string.
 
   // Dictionary of supported commands and their handlers
   const commands: Record<string, CommandFn> = {

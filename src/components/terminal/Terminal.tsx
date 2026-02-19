@@ -1,6 +1,9 @@
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { useEffect, useRef } from 'react';
+import { parseCommand } from '../../lib/commands/index.ts';
+
+
 
 function Terminal() {
 
@@ -16,7 +19,7 @@ function Terminal() {
     terminal.open(terminalRef.current);                           // Open terminal in container
 
     fitAddon.fit();                                               // Fit terminal to container size
-    terminal.write('Hello, World!');                              // Test output
+    terminal.write('Welcome to GitSim!\r\n$ ');
 
     // xterm handles its own state, a persistant input buffer is fine
     let inputBuffer = "";
@@ -25,7 +28,8 @@ function Terminal() {
     terminal.onData((data) => {
 
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
-        terminal.write(`\r\nYou entered: ${inputBuffer.trim()}\r\n`);
+        const result = parseCommand(inputBuffer);
+        terminal.write(`\r\n${result}\r\n$ `);
         inputBuffer = "";
       } else if (data.includes('\u007F')) {                       // If backspace, slice last char
         inputBuffer = inputBuffer.slice(0, -1);
