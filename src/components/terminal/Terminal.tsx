@@ -24,17 +24,16 @@ function Terminal() {
     // xterm has its own event system for handling user input
     terminal.onData((data) => {
 
-      inputBuffer += data;                                        // Append new data to input buffer
-
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
         terminal.write(`\r\nYou entered: ${inputBuffer.trim()}\r\n`);
-        inputBuffer = "";                                         // Clear the input buffer
+        inputBuffer = "";
+      } else if (data.includes('\u007F')) {                       // If backspace, slice last char
+        inputBuffer = inputBuffer.slice(0, -1);
+        terminal.write('\b \b');                                  // Move back, write space to erase, move back again
+      } else {                                                    // For other input, just append to buffer
+        inputBuffer += data;
+        terminal.write(data);                                     // Echo input back to terminal
       }
-
-      if (data.includes('\u007F')) {                              // Check for Backspace key
-        inputBuffer = inputBuffer.slice(0, -1);                   // Remove the last character from the input buffer
-      }
-
     });
 
     // Cleanup function to dispose of terminal instance on unmount
