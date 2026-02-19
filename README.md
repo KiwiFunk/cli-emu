@@ -31,6 +31,9 @@ You can think of it as an extention of a basic html table layout, but with the a
 </PanelGroup>
 ```
 
+### `xterm.js`
+This is a popular JavaScript library for creating terminal emulators in the browser. It provides a visual terminal-like interface that we can hook up to our logic. It handles rendering the terminal, managing cursor position, and processing user input for us. We can listen for key events and capture the input string, which we will then parse and execute against our virtual file system and git implementation.
+
 ### `lightning-fs`
 This is a virtual file system optimized for use with `isomorphic-git`. It allows us to create an in-memory file system that behaves like a real one, which is crucial for running git commands in the browser. It supports standard file operations like reading, writing, and listing files, and it integrates seamlessly with `isomorphic-git` to allow us to perform git operations on the virtual file system. It makes use of the browser's IndexedDB for persistent storage, so we dont have to worry about issues with in-memory storage, such as limits, or data loss on page refresh. 
 
