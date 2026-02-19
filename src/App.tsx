@@ -5,8 +5,7 @@ function App() {
 
   return (
     <>
-      <SplitView>
-      </SplitView>
+      <SplitView className="p-4" />
     </>
   )
 }
