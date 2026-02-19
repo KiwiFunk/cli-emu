@@ -1,5 +1,6 @@
 import { Group, Panel, Separator } from 'react-resizable-panels';
 
+import Terminal from '../terminal/Terminal';
 
 const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
 
@@ -35,8 +36,7 @@ function SplitView({ className }: SplitViewProps) {
         />
 
         <Panel className={`${panelStyles}`} minSize="20%">
-          {/* Terminal Window Goes Here */}
-          right
+          <Terminal />
         </Panel>
       </Group>
     </>
