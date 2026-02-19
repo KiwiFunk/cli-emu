@@ -1,13 +1,17 @@
 import { Group, Panel, Separator } from 'react-resizable-panels';
 
-export default function SplitView() {
+/**
+ * For now we accept child props for the sake of testing, but eventually this component will be responsible for rendering the browser and terminal windows itself.
+ * @returns -
+ */
+export default function SplitView( { children }: { children?: React.ReactNode }) {
 
   return (
     <>
       <Group>
         <Panel minSize="40%">
           {/* Browser Window Goes Here */}
-          left
+          { children }
         </Panel>
         <Separator />
         <Panel>
