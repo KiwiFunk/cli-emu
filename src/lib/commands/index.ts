@@ -22,4 +22,20 @@ export function parseCommand(input: string) {
  */
 function dispatchCommand(cmd: string, ...args: string[]) {
 
+  if (!cmd) {
+    console.log("No command entered");
+    return;
+  }
+
+  switch (cmd) {
+    case "ls":
+      // Call the ls command handler with the provided arguments
+      console.log("Executing ls with args:", args);
+      console.log("ls not yet implemented");
+      break;
+    default:
+      // Handle unknown command
+      console.log(`command not found: ${cmd}`);
+      break;
+  }
 }
