@@ -1,3 +1,17 @@
+
+## Project Flow
+
+### Terminal Input Handling
+```
+Terminal types "ls /home"
+        ↓
+index.ts receives "ls /home"
+        ↓
+index.ts splits it, sees "ls", calls shell.ts → ls("/home")
+        ↓
+shell.ts talks to fs, returns output string back up the chain
+```
+
 ##  Technologies
 
 ### `react-resizable-panels`
