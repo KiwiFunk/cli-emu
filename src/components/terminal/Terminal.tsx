@@ -12,7 +12,9 @@ function Terminal() {
     const fitAddon = new FitAddon();                              // This allows the terminal to handle dynamic resizing
     terminal.loadAddon(fitAddon);                                 // Load the fit addon into the terminal instance
 
-    terminal.open(document.getElementById('terminal-display')!);  // Open terminal in the div container
+    if (!terminalRef.current) return;                             // Guard against null ref
+    terminal.open(terminalRef.current);                           // Open terminal in container
+
     fitAddon.fit();                                               // Fit terminal to container size
     terminal.write('Hello, World!');                              // Test output
 
@@ -21,14 +23,18 @@ function Terminal() {
 
     // xterm has its own event system for handling user input
     terminal.onData((data) => {
+
       inputBuffer += data;                                        // Append new data to input buffer
+
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
         terminal.write(`\r\nYou entered: ${inputBuffer.trim()}\r\n`);
-        inputBuffer = ""; // Clear the input buffer for the next command
+        inputBuffer = "";                                         // Clear the input buffer
       }
+
       if (data.includes('\u007F')) {                              // Check for Backspace key
         inputBuffer = inputBuffer.slice(0, -1);                   // Remove the last character from the input buffer
       }
+
     });
 
     // Cleanup function to dispose of terminal instance on unmount
@@ -38,7 +44,7 @@ function Terminal() {
   }, []);
 
   return (
-    <div id="terminal-display" className="w-full h-full" />
+    <div ref={terminalRef} className="w-full h-full" />
   );
 }
 
