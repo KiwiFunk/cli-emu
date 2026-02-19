@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@isomorphic-git/lightning-fs": "^4.6.2",
     "@tailwindcss/vite": "^4.2.0",
+    "isomorphic-git": "^1.37.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-resizable-panels": "^4.6.4",
