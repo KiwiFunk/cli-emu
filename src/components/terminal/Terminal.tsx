@@ -1,7 +1,7 @@
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { useEffect, useRef } from 'react';
-import { parseCommand } from '../../lib/commands/index.ts';
+import { dispatchCommand } from '../../lib/commands/index.ts';
 
 
 
@@ -28,7 +28,7 @@ function Terminal() {
     terminal.onData((data) => {
 
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
-        const result = parseCommand(inputBuffer);
+        const result = dispatchCommand(inputBuffer);
         terminal.write(result ? `\r\n${result}\r\n$ ` : `\r\n$ `);
         inputBuffer = "";
       } else if (data.includes('\u007F')) {                       // If backspace, slice last char
