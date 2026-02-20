@@ -20,7 +20,7 @@ function Terminal() {
     terminal.open(terminalRef.current);                           // Open terminal in container
 
     fitAddon.fit();                                               // Fit terminal to container size
-    terminal.write(`Welcome to GitSim!\r\n${primaryPrompt}${getCwd()}$ `);
+    terminal.write(`Welcome to GitSim!\r\n${primaryPrompt}'/home/user$ `);
 
     // xterm handles its own state, a persistant input buffer is fine
     let inputBuffer = "";
