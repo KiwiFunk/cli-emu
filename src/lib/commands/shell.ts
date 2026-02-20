@@ -67,6 +67,22 @@ export async function pwd(): Promise<string>  {
   return `Path\n----\n${cwd}`;
 }
 
+export async function touch(ctx: CommandContext): Promise<string> {
+  const { args } = ctx;
+  const filename = args[0];
+  if (!filename) return "touch: missing file operand";
+
+  const cwd = useTerminalStore.getState().cwd;
+  const path = `${cwd}/${filename}`.replace(/\/+/g, '/');
+
+  try {
+    await fs.promises.writeFile(path, ""); // Create empty file
+    return ""; // No output on success
+  } catch {
+    return `touch: cannot create file '${filename}': No such directory`;
+  }
+};
+
 // Future commands to implement:
 // cd(path: string): void
 // mkdir(path: string): void

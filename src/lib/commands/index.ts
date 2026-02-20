@@ -58,7 +58,8 @@ export async function dispatchCommand(input: string): Promise<string> {
   const commands: Record<string, CommandFn> = {
     "ls": shell.ls,
     "pwd": shell.pwd,
-    "help": () => Promise.resolve("Available: ls, pwd, help"),
+    "touch": shell.touch,
+    "help": () => Promise.resolve("Available: ls, pwd, touch, help"),
     // "cd": shell.cd,
   };
 
