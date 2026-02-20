@@ -41,3 +41,6 @@ To make use of `isomorphic-git` we also need a proper file system, as it wouldn'
 
 ### `isomorphic-git`
 This is a pure JavaScript implementation of git that can run in the browser. It allows us to execute git commands against our virtual file system, enabling us to simulate a git workflow entirely in the browser. It supports a wide range of git commands, including `git init`, `git add`, `git commit`, and more. It also provides a way to read the git log and file tree, which we can use to render the "GitHub" view in our application.
+
+### `zustand`
+This is a small, fast, and scalable state management library for React. It will allow us to manage the state of our application, such as the current file system structure, git history, and UI state (like which commit is selected). It provides a simple API for creating a global store that can be accessed and updated from any component in our application.
