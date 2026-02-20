@@ -97,6 +97,57 @@ export async function touch(ctx: CommandContext): Promise<string> {
   return results.filter(r => r !== "").join('\n');
 };
 
+export async function cd(ctx: CommandContext): Promise<string> {
+  const { args } = ctx;
+
+  if (args.length === 0) return "cd: missing operand";
+
+  const targetDir = args[0];
+  const state = useTerminalStore.getState();    // Get current state to access cwd and setCwd
+  const cwd = state.cwd;                        // Current working directory
+
+
+  if (targetDir === ".") return "";             // Cwd - return
+
+  if (targetDir === "..") {                     // Parent directory (Check if we're at root first)
+    if (cwd === "/") return "";
+    const parent = cwd.split('/').slice(0, -1).join('/') || '/';
+    state.setCwd(parent);
+    return "";
+  }
+
+  // Resolve Path (Absolute vs Relative)
+  let fullPath: string;
+
+  if (targetDir.startsWith('/')) {
+    // Absolute path: use as is, but clean up double slashes
+    fullPath = targetDir.replace(/\/+/g, '/');
+  } else {
+    // Relative path: join with current directory
+    fullPath = (cwd === '/' ? `/${targetDir}` : `${cwd}/${targetDir}`).replace(/\/+/g, '/');
+  }
+
+  // Remove trailing slash unless it's the root
+  if (fullPath.length > 1 && fullPath.endsWith('/')) {
+    fullPath = fullPath.slice(0, -1);
+  }
+
+  // Validate the target path exists and is a directory
+  try {
+    const stats = await fs.promises.stat(fullPath);       // stat only resolves if path exists.
+    if (!stats.isDirectory()) {
+      return `cd: ${targetDir}: Not a directory`;
+    }
+    // Update state
+    state.setCwd(fullPath);
+    return "";
+
+  } catch {
+    return `cd: ${targetDir}: No such file or directory`;
+  }
+
+}
+
 // Future commands to implement:
 // cd(path: string): void
 // mkdir(path: string): void

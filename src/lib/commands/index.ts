@@ -59,8 +59,8 @@ export async function dispatchCommand(input: string): Promise<string> {
     "ls": shell.ls,
     "pwd": shell.pwd,
     "touch": shell.touch,
-    "help": () => Promise.resolve("Available: ls, pwd, touch, help"),
-    // "cd": shell.cd,
+    "cd": shell.cd,
+    "help": () => Promise.resolve("Available: ls, cd, pwd, touch, help"),
   };
 
   // Look up the command handler in the dict. If not found, return error message.
