@@ -12,7 +12,7 @@ async function mkdirSafe(path: string) {
   }
 }
 
-export async function initFs() {
+export default async function initFs() {
   // Create the initial file structure.
   await mkdirSafe('/');
   await mkdirSafe('/home');
