@@ -1,42 +1,84 @@
-// Import commands
 import * as shell from "./shell";
 
-// TS Type Definitions
-type CommandFn = (...args: string[]) => string;
+// Type definitions for command context and handler functions.
+export interface CommandContext {
+  args: string[];                           // Positional arguments, e.g. ["file.txt", "dir/"]
+  flags: Record<string, boolean | string>;  // Flags and options, e.g. { l: true, color: "red" }
+  raw: string;                              // The original raw input string for reference.
+}
+
+export type CommandFn = (ctx: CommandContext) => string;
 
 /**
- * Takes in a raw command string, and parses it into an array of command and arguments.
- * @param input - The raw command string entered by the user.
- * @returns - text output to be displayed in the terminal.
+ *  Parse the input string into a command and its context.
+ * @param String input - The raw command string entered by the user.
+ * @returns - An object containing the command and a context object containing arguments, flags, and the raw input.
  */
-export function parseCommand(input: string) {
-  const args = input.trim().split(" ");     // Split input string into an array of parts, e.g. "ls -la /home" => ["ls", "-la", "/home"]
-  const command = args.shift() || "";       // Extract the first element as the command, e.g. "ls", and remove it from the args array.
-  return dispatchCommand(command, ...args); // Dispatch the command
+function parseInput(input: string): { cmd: string; ctx: CommandContext } {
+
+  // Split string into parts, respecting quoted substrings, or return empty array if no matches. E.g `ls -la "My Documents"` => ["ls", "-la", "My Documents"]
+  const matches = input.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g) || [];
+
+  // Clean up single and double quotes.
+  const parts = matches.map(m => m.replace(/^['"]|['"]$/g, ""));
+
+  // Extract command (first part) and normalize to lowercase. If no parts, default to empty string.
+  const cmd = parts.shift()?.toLowerCase() || "";
+
+  const flags: Record<string, boolean | string> = {};
+  const args: string[] = [];
+
+  parts.forEach(part => {
+
+    // Process flags into a key-value object. E.g --color=red => { color: "red" }, or --a => { a: true }
+    if (part.startsWith("--")) {
+      const [key, value] = part.replace("--", "").split("=");
+      flags[key] = value ?? true;
+    } else if (part.startsWith("-") && part.length > 1) {
+      // Handles -la as { l: true, a: true }
+      part.slice(1).split("").forEach(char => flags[char] = true);
+    }
+    // Otherwise, it's a positional argument. E.g ls -la /home => args = ["/home"]
+    else {
+      args.push(part);
+    }
+  });
+
+  return { cmd, ctx: { args, flags, raw: input } };
 }
 
 /**
- * Dispatches the command to the appropriate handler function based on the command name.
- * @param command - The command to execute, e.g. "ls", "cd", "mkdir", etc.
- * @param args[] - Array of arguments passed to the command, e.g. ["-la", "/home"] for "ls -la /home"
- * @returns - The result of the command execution.
+ * Dispatch a command from a given input string.
+ * This function is the entry point for processing user input and routing it to the appropriate command handler.
+ * @param String input - The raw command string entered by the user.
+ * @returns - The output string from the command handler, or an error message if the command is not found or fails.
  */
-function dispatchCommand(cmd: string, ...args: string[]) {
+export function dispatchCommand(input: string): string {
 
-  if (!cmd) return "";                      // If no command is entered, just return an empty string.
+  // Parse input and deconstruct command and context.
+  const { cmd, ctx } = parseInput(input);
 
-  // Dictionary of supported commands and their handlers
+  if (!cmd) return "";
+
+  // Dict mapping command strings to their handler functions.
   const commands: Record<string, CommandFn> = {
     "ls": shell.ls,
-    //"cd": shell.cd,
+    "help": () => "Available: ls, cd, clear, help",
+    // "cd": shell.cd,
   };
 
-  const commandFn = commands[cmd];            // Look up the command in the dictionary
+  // Look up the command handler in the dict. If not found, return error message.
+  const handler = commands[cmd];
 
-  // Execute logic and return text output to calling function, which will then be displayed in the terminal.
-  if (commandFn) {
-    return commandFn(...args);
-  } else {
-    return `Command not found: ${cmd}`;
+  if (!handler) {
+    return `Command not found: ${cmd}. Type 'help' for options.`;
+  }
+
+  // Dispatch to the handler with context.
+  try {
+    return handler(ctx);
+  } catch (err) {
+    console.error(err);
+    return `Error: Failed to execute ${cmd}`;
   }
 }
