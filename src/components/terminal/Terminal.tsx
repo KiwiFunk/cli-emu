@@ -25,10 +25,10 @@ function Terminal() {
     let inputBuffer = "";
 
     // xterm has its own event system for handling user input
-    terminal.onData((data) => {
+    terminal.onData(async (data) => {
 
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
-        const result = dispatchCommand(inputBuffer);
+        const result = await dispatchCommand(inputBuffer);
         terminal.write(result ? `\r\n${result}\r\n$ ` : `\r\n$ `);
         inputBuffer = "";
       } else if (data.includes('\u007F')) {                       // If backspace, slice last char

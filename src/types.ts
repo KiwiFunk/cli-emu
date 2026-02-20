@@ -4,4 +4,4 @@ export interface CommandContext {
   raw: string;                              // The original raw input string for reference.
 }
 
-export type CommandFn = (ctx: CommandContext) => string;
+export type CommandFn = (ctx: CommandContext) => Promise<string>;

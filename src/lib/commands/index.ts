@@ -47,7 +47,7 @@ function parseInput(input: string): { cmd: string; ctx: CommandContext } {
  * @param String input - The raw command string entered by the user.
  * @returns - The output string from the command handler, or an error message if the command is not found or fails.
  */
-export function dispatchCommand(input: string): string {
+export async function dispatchCommand(input: string): Promise<string> {
 
   // Parse input and deconstruct command and context.
   const { cmd, ctx } = parseInput(input);
@@ -57,7 +57,7 @@ export function dispatchCommand(input: string): string {
   // Dict mapping command strings to their handler functions.
   const commands: Record<string, CommandFn> = {
     "ls": shell.ls,
-    "help": () => "Available: ls, cd, clear, help",
+    "help": () => Promise.resolve("Available: ls, cd, clear, help"),
     // "cd": shell.cd,
   };
 
