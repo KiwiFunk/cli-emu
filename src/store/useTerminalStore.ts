@@ -10,3 +10,7 @@ export const useTerminalStore = create<TerminalStore>((set) => ({
   cwd: '/',
   setCwd: (newCwd) => set({ cwd: newCwd }),
 }));
+
+export function getCwd(): string {
+  return useTerminalStore.getState().cwd;
+}
