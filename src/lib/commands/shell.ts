@@ -135,9 +135,10 @@ export async function cd(ctx: CommandContext): Promise<string> {
   // Validate the target path exists and is a directory
   try {
     const stats = await fs.promises.stat(fullPath);       // stat only resolves if path exists.
-    if (!stats.isDirectory()) {
+    if (stats.type !== 'dir') {
       return `cd: ${targetDir}: Not a directory`;
     }
+
     // Update state
     state.setCwd(fullPath);
     return "";

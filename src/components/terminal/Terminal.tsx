@@ -2,7 +2,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { useEffect, useRef } from 'react';
 import { dispatchCommand } from '../../lib/commands/index.ts';
-import { useTerminalStore } from '../../store/useTerminalStore.ts';
+import { getCwd } from '../../store/useTerminalStore.ts';
 
 
 function Terminal() {
@@ -20,8 +20,7 @@ function Terminal() {
     terminal.open(terminalRef.current);                           // Open terminal in container
 
     fitAddon.fit();                                               // Fit terminal to container size
-    const cwd = useTerminalStore.getState().cwd;
-    terminal.write(`Welcome to GitSim!\r\n${primaryPrompt}${cwd}$ `);
+    terminal.write(`Welcome to GitSim!\r\n${primaryPrompt}${getCwd()}$ `);
 
     // xterm handles its own state, a persistant input buffer is fine
     let inputBuffer = "";
@@ -31,7 +30,7 @@ function Terminal() {
 
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
         const result = await dispatchCommand(inputBuffer);
-        terminal.write(result ? `\r\n${result}\r\n${primaryPrompt}${cwd}$ ` : `\r\n${primaryPrompt}${cwd}$ `);
+        terminal.write(result ? `\r\n${result}\r\n${primaryPrompt}${getCwd()}$ ` : `\r\n${primaryPrompt}${getCwd()}$ `);
         inputBuffer = "";
       } else if (data.includes('\u007F')) {                       // If backspace, slice last char
         inputBuffer = inputBuffer.slice(0, -1);
