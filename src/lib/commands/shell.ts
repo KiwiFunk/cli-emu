@@ -49,7 +49,7 @@ export async function ls(ctx: CommandContext): Promise<string> {
         })
       );
       // Join lines with newlines for long format output
-      return lines.join('\n');
+      return lines.join('\r\n');
     }
 
     // If not long format, just join names with spacing
@@ -64,7 +64,7 @@ export async function ls(ctx: CommandContext): Promise<string> {
 // Zustand provides .getState() and .setState() functions to access/update outside of React.
 export async function pwd(): Promise<string>  {
   const cwd = useTerminalStore.getState().cwd;
-  return `Path\n----\n${cwd}`;
+  return `Path\r\n----\r\n${cwd}`;
 }
 
 export async function touch(ctx: CommandContext): Promise<string> {
