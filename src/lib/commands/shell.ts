@@ -62,7 +62,7 @@ export async function ls(ctx: CommandContext): Promise<string> {
 };
 
 // Zustand provides .getState() and .setState() functions to access/update outside of React.
-export function pwd() {
+export async function pwd(): Promise<string>  {
   const cwd = useTerminalStore.getState().cwd;
   return `Path\n----\n${cwd}`;
 }

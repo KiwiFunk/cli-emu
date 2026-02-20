@@ -57,7 +57,8 @@ export async function dispatchCommand(input: string): Promise<string> {
   // Dict mapping command strings to their handler functions.
   const commands: Record<string, CommandFn> = {
     "ls": shell.ls,
-    "help": () => Promise.resolve("Available: ls, cd, clear, help"),
+    "pwd": shell.pwd,
+    "help": () => Promise.resolve("Available: ls, pwd, help"),
     // "cd": shell.cd,
   };
 
