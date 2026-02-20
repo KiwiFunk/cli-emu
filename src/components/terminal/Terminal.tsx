@@ -29,7 +29,7 @@ function Terminal() {
 
       if (data.includes('\r')) {                                  // Check for Enter key (carriage return)
         const result = parseCommand(inputBuffer);
-        terminal.write(`\r\n${result}\r\n$ `);
+        terminal.write(result ? `\r\n${result}\r\n$ ` : `\r\n$ `);
         inputBuffer = "";
       } else if (data.includes('\u007F')) {                       // If backspace, slice last char
         inputBuffer = inputBuffer.slice(0, -1);
