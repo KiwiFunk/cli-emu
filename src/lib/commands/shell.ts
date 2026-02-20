@@ -69,18 +69,32 @@ export async function pwd(): Promise<string>  {
 
 export async function touch(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
-  const filename = args[0];
-  if (!filename) return "touch: missing file operand";
 
-  const cwd = useTerminalStore.getState().cwd;
-  const path = `${cwd}/${filename}`.replace(/\/+/g, '/');
-
-  try {
-    await fs.promises.writeFile(path, ""); // Create empty file
-    return ""; // No output on success
-  } catch {
-    return `touch: cannot create file '${filename}': No such directory`;
+  if (args.length === 0) {
+    return "touch: missing file operand";
   }
+
+  const results = await Promise.all(
+    args.map(async(arg) => {
+      if (arg.includes('/')) {
+        return `touch: invalid file name '${arg}': File name cannot contain '/'`;
+      }
+
+      const filename = arg;
+
+      const cwd = useTerminalStore.getState().cwd;
+      const path = `${cwd}/${filename}`.replace(/\/+/g, '/');
+
+      try {
+        await fs.promises.writeFile(path, ""); // Create empty file
+        return ""; // No output on success
+      } catch {
+        return `touch: cannot create file '${filename}': No such directory`;
+      }
+    })
+  );
+  // Only return error messages. If all succeeded, return empty string.
+  return results.filter(r => r !== "").join('\n');
 };
 
 // Future commands to implement:
