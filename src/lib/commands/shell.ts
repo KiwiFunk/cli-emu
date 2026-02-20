@@ -1,7 +1,9 @@
 // Shell commands (ls, cd, mkdir, touch, cat, echo etc.)
 
 import { useTerminalStore } from "../../store/useTerminalStore.ts";
-import { fs } from '../fileSystem.ts';
+import fs from '../fileSystem.ts';
+
+import type { CommandContext } from "../../types.ts";
 
 /**
  * Lists directory contents.
