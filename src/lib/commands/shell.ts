@@ -1,34 +1,43 @@
 // Shell commands (ls, cd, mkdir, touch, cat, echo etc.)
-
 import { useTerminalStore } from "../../store/useTerminalStore.ts";
 import fs from '../fileSystem.ts';
-
 import type { CommandContext } from "../../types.ts";
 
 /**
- * Lists directory contents.
- * Supports: -a (all), -l (long format), and custom paths.
+ * Helper to resolve relative or absolute paths against the CWD
+ */
+const resolvePath = (input: string): string => {
+  const cwd = useTerminalStore.getState().cwd;
+
+  if (input == ".") return cwd;
+
+  const combined = input.startsWith('/') ? input : `${cwd}/${input}`;
+  // Normalize: remove double slashes and trailing slashes (except root)
+  let normalized = combined.replace(/\/+/g, '/');
+  if (normalized.length > 1 && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+  return normalized || '/';
+};
+
+/**
+ *  Finds and returns the contents of a directory, with options for showing hidden files and long format.
+ * Supports: -a (all files including hidden), -l (long format with file type and size).
+ * @param ctx - A context object from the dispatch function containing any flags and arguments.
+ * @returns String - A formatted string of the directory contents, or an error message if the path is invalid.
  */
 export async function ls(ctx: CommandContext): Promise<string> {
 
-  const { flags, args } = ctx;        // Deconstruct flags and args from context.
+  const { flags, args } = ctx;                                            // Deconstruct flags and args from the command context
 
-  // Use Double NOT (!!) to ensure we get a real bool
-  const showHidden = !!flags.a;
+  const showHidden = !!flags.a;                                           // Use Double NOT (!!) to ensure we get a real bool
   const longFormat = !!flags.l;
 
-  const targetDir = args[0] || ".";             // Get target directory (first positional argument or current)
-  const cwd = useTerminalStore.getState().cwd;  // Get current working directory from Zustand store
+  const targetPath = resolvePath(args[0] || ".");                         // Get target directory (first positional argument or current)
 
-  // Resolve target directory against current working directory
-  const path = targetDir == "."
-    ? cwd
-    : `${cwd}/${targetDir}`.replace(/\/+/g, '/');
-
-  // LightningFS operations must be used with async/await
   try {
     // Await directory contents from query
-    const contents = await fs.promises.readdir(path);
+    const contents = await fs.promises.readdir(targetPath);
 
     // Filter hidden files if -a is not set
     const filtered = showHidden ? contents : contents.filter((name: string) => !name.startsWith('.'));
@@ -38,9 +47,10 @@ export async function ls(ctx: CommandContext): Promise<string> {
 
       // Await each file to build output lines with type, size, and name
       const lines = await Promise.all(
+
         // Map over filtered contents
         filtered.map(async (name) => {
-          const filePath = `${path}/${name}`.replace(/\/+/g, '/');
+          const filePath = resolvePath(`${targetPath}/${name}`);
           const stats = await fs.promises.stat(filePath);
 
           const type = stats.type === 'dir' ? 'd' : '-';
@@ -51,107 +61,123 @@ export async function ls(ctx: CommandContext): Promise<string> {
       // Join lines with newlines for long format output
       return lines.join('\r\n');
     }
-
     // If not long format, just join names with spacing
     return filtered.join('  ');
-
   } catch {
-    // If fs operations fail (e.g. path doesn't exist), return error message
-    return `ls: cannot access '${targetDir}': No such file or directory`;
+    return `ls: cannot access '${args[0] || "."}': No such file or directory`;
   }
-};
+}
 
-// Zustand provides .getState() and .setState() functions to access/update outside of React.
+/**
+ * Function to fetch and return the current working directory from the Zustand store.
+ * Zustand provides .getState() and .setState() functions to access/update outside of React.
+ * @returns String containing current working directory from the Zustand store
+ */
 export async function pwd(): Promise<string>  {
   const cwd = useTerminalStore.getState().cwd;
   return `Path\r\n----\r\n${cwd}`;
 }
 
+/**
+ * Attempts to create a file at the current working directory with the given name(s).
+ * @param ctx - A context object from the dispatcher containing any arguments
+ * @returns
+ */
 export async function touch(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
-
-  if (args.length === 0) {
-    return "touch: missing file operand";
-  }
+  if (args.length === 0) return "touch: missing file operand";
 
   const results = await Promise.all(
-    args.map(async(arg) => {
-      if (arg.includes('/')) {
-        return `touch: invalid file name '${arg}': File name cannot contain '/'`;
-      }
-
-      const filename = arg;
-
-      const cwd = useTerminalStore.getState().cwd;
-      const path = `${cwd}/${filename}`.replace(/\/+/g, '/');
-
+    args.map(async (arg) => {
+      const path = resolvePath(arg);
       try {
-        await fs.promises.writeFile(path, ""); // Create empty file
-        return ""; // No output on success
+        await fs.promises.writeFile(path, "");
+        return "";
       } catch {
-        return `touch: cannot create file '${filename}': No such directory`;
+        return `touch: cannot create file '${arg}': No such directory`;
       }
     })
   );
-  // Only return error messages. If all succeeded, return empty string.
-  return results.filter(r => r !== "").join('\n');
-};
-
-export async function cd(ctx: CommandContext): Promise<string> {
-  const { args } = ctx;
-
-  if (args.length === 0) return "cd: missing operand";
-
-  const targetDir = args[0];
-  const state = useTerminalStore.getState();    // Get current state to access cwd and setCwd
-  const cwd = state.cwd;                        // Current working directory
-
-
-  if (targetDir === ".") return "";             // Cwd - return
-
-  if (targetDir === "..") {                     // Parent directory (Check if we're at root first)
-    if (cwd === "/") return "";
-    const parent = cwd.split('/').slice(0, -1).join('/') || '/';
-    state.setCwd(parent);
-    return "";
-  }
-
-  // Resolve Path (Absolute vs Relative)
-  let fullPath: string;
-
-  if (targetDir.startsWith('/')) {
-    // Absolute path: use as is, but clean up double slashes
-    fullPath = targetDir.replace(/\/+/g, '/');
-  } else {
-    // Relative path: join with current directory
-    fullPath = (cwd === '/' ? `/${targetDir}` : `${cwd}/${targetDir}`).replace(/\/+/g, '/');
-  }
-
-  // Remove trailing slash unless it's the root
-  if (fullPath.length > 1 && fullPath.endsWith('/')) {
-    fullPath = fullPath.slice(0, -1);
-  }
-
-  // Validate the target path exists and is a directory
-  try {
-    const stats = await fs.promises.stat(fullPath);       // stat only resolves if path exists.
-    if (stats.type !== 'dir') {
-      return `cd: ${targetDir}: Not a directory`;
-    }
-
-    // Update state
-    state.setCwd(fullPath);
-    return "";
-
-  } catch {
-    return `cd: ${targetDir}: No such file or directory`;
-  }
-
+  return results.filter(Boolean).join('\n');
 }
 
-// Future commands to implement:
-// cd(path: string): void
-// mkdir(path: string): void
-// touch(path: string): void
-// cat(path: string): string
-// echo(text: string): void
+/**
+ * Create a new directory at the current working directory with the given name(s). Supports -p for recursive creation.
+ * -p will allow creating nested directories in one command
+ * @param ctx - A context object from the dispatcher containing any arguments and flags
+ * @returns - An empty string on success, or an error message if the directory cannot be created (e.g. parent doesn't exist without -p, or already exists).
+ */
+export async function mkdir(ctx: CommandContext): Promise<string> {
+  const { args, flags } = ctx;
+  if (args.length === 0) return "mkdir: missing operand";
+
+  const recursive = !!flags.p;
+  const results = await Promise.all(args.map(async (arg) => {
+    const targetPath = resolvePath(arg);
+
+    if (recursive) {
+      const parts = targetPath.split('/').filter(Boolean);
+      let currentPath = "";
+      for (const part of parts) {
+        currentPath += `/${part}`;
+        try {
+          await fs.promises.mkdir(currentPath);
+        } catch (err: unknown) {
+          const error = err as { code?: string; message?: string };
+          // Ignore if it already exists, otherwise re-throw
+          if (error.code !== 'EEXIST' && error.message !== 'Directory already exists') {
+            throw err;
+          }
+        }
+      }
+      return "";
+    } else {
+      try {
+        await fs.promises.mkdir(targetPath);
+        return "";
+      } catch (err: unknown) {
+        const error = err as { code?: string; message?: string };
+        if (error.code === 'EEXIST' || error.message === 'Directory already exists') {
+          return `mkdir: '${arg}': File exists`;
+        }
+        return `mkdir: '${arg}': No such file or directory`;
+      }
+    }
+  }));
+
+  return results.filter(Boolean).join('\n');
+}
+
+/**
+ *  Changes the current working directory in the Zustand store to the target directory specified in the command arguments.
+ *  Validates that the target path exists and is a directory before updating the CWD
+ * @param ctx - A context object from the dispatcher containing any arguments
+ * @returns string - An empty string on success, or an error message if the target path is invalid or not a directory.
+ */
+export async function cd(ctx: CommandContext): Promise<string> {
+  const { args } = ctx;
+  if (args.length === 0) return ""; // cd with no args usually goes to ~ or does nothing
+
+  const target = args[0];                       // Get target dir from first positional argument
+  const state = useTerminalStore.getState();    // Fetch state from Zustand store to access current CWD and setCwd function
+
+  let targetPath = resolvePath(target);         // Resolve target path against CWD
+
+  // Handle special case for ".." to go up one directory
+  if (target === "..") {
+    const parts = state.cwd.split('/').filter(Boolean);
+    parts.pop();
+    targetPath = '/' + parts.join('/');
+  }
+
+  try {
+    // Check if target path exists and is a directory. If not, return appropriate error message.
+    const stats = await fs.promises.stat(targetPath);
+    if (stats.type !== 'dir') return `cd: ${target}: Not a directory`;
+
+    state.setCwd(targetPath);
+    return "";
+  } catch {
+    return `cd: ${target}: No such file or directory`;
+  }
+}
