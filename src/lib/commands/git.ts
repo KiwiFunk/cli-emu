@@ -2,6 +2,8 @@ import git from 'isomorphic-git';
 import fs from '../fileSystem';
 import { getCwd } from "../../store/useTerminalStore.ts";
 import type { CommandContext } from "../../types.ts";
+import { resolvePath, exists } from './helpers.ts';
+import { mkdir } from './shell.ts';
 
 
 
@@ -14,18 +16,33 @@ export async function init(ctx: CommandContext): Promise<string> {
 
   // No directory specified, initialize in current working directory
   if (args.length === 0) {
-
+    await git.init({
+      fs,             // LightningFS instance
+      dir: getCwd()   // from Zustand store
+    });
+    return "";
   }
 
-  // CREATE 'EXISTS' function to check if directory exists, return bool
-  // if doesnt exist, attempt to create
+  // Directory specified, initialize there.
+  if (await exists(fs, args[0], "dir")) {
+    await git.init({
+      fs,
+      dir: resolvePath(args[0])
+    });
+    return "";
+  }
 
-}
+  // If it doesn't exist, create it first.
+  else {
+    await mkdir({ args: [args[0]], flags: { p: true } });
+    await git.init({
+      fs,
+      dir: resolvePath(args[0])
+    });
+    return "";
+  }
+};
 
-await git.init({
-  fs,             // LightningFS instance
-  dir: getCwd()   // from Zustand store
-});
 
 // git add <file>
 export async function add(ctx: CommandContext): Promise<string> {
