@@ -3,12 +3,14 @@ import * as shell from "./shell";
 // Import type definitions
 import type { CommandContext, CommandFn } from "../../types.ts";
 
+const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm"];
+
 /**
  *  Parse the input string into a command and its context.
  * @param String input - The raw command string entered by the user.
- * @returns - An object containing the command and a context object containing arguments, flags, and the raw input.
+ * @returns - An object containing the command and a context object containing arguments, ?Subcommands, flags, and the raw input.
  */
-function parseInput(input: string): { cmd: string; ctx: CommandContext } {
+function parseInput(input: string): { cmd: string, subcmd: string | null; ctx: CommandContext } {
 
   // Split string into parts, respecting quoted substrings, or return empty array if no matches. E.g `ls -la "My Documents"` => ["ls", "-la", "My Documents"]
   const matches = input.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g) || [];
@@ -18,9 +20,13 @@ function parseInput(input: string): { cmd: string; ctx: CommandContext } {
 
   // Extract command (first part) and normalize to lowercase. If no parts, default to empty string.
   const cmd = parts.shift()?.toLowerCase() || "";
+  let subcmd: string | null = null;
 
   const flags: Record<string, boolean | string> = {};
   const args: string[] = [];
+
+  // Check if command has Subcommands
+  const isMultiLevel = COMMANDS_WITH_SUBCOMMANDS.includes(cmd);
 
   parts.forEach(part => {
 
@@ -32,13 +38,17 @@ function parseInput(input: string): { cmd: string; ctx: CommandContext } {
       // Handles -la as { l: true, a: true }
       part.slice(1).split("").forEach(char => flags[char] = true);
     }
+    // Only capture a subcmd if the command is allowed to have one
+    else if (isMultiLevel && !subcmd) {
+      subcmd = part.toLowerCase();
+    }
     // Otherwise, it's a positional argument. E.g ls -la /home => args = ["/home"]
     else {
       args.push(part);
     }
   });
 
-  return { cmd, ctx: { args, flags, raw: input } };
+  return { cmd, subcmd, ctx: { args, flags, raw: input } };
 }
 
 /**
@@ -62,6 +72,17 @@ export async function dispatchCommand(input: string): Promise<string> {
     "touch": shell.touch,
     "cd": shell.cd,
     "help": () => Promise.resolve("Available: ls, cd, pwd, touch, help"),
+
+    // Subcommands
+    "git": async (ctx) => {
+      const subcommand = ctx.args[0];
+      const subCtx = { ...ctx, args: ctx.args.slice(1) };
+
+      if (subcommand === 'init') return gitCommands.init(subCtx);
+
+      return `git: '${subcommand}' is not a git command`;
+    },
+
   };
 
   // Look up the command handler in the dict. If not found, return error message.
