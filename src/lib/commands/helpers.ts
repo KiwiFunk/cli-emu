@@ -1,3 +1,4 @@
+import type FS from "@isomorphic-git/lightning-fs";
 import { useTerminalStore } from "../../store/useTerminalStore.ts";
 
 /**
@@ -15,4 +16,29 @@ export const resolvePath = (input: string): string => {
     normalized = normalized.slice(0, -1);
   }
   return normalized || '/';
+};
+
+/**
+ * Check if a path exists in the virtual filesystem, and optionally verify its type (e.g. "dir" or "file")
+ * @param fs - The virtual filesystem instance
+ * @param path - The path to check
+ * @param type - Optional type to verify ("dir" or "file")
+ * @returns A promise that resolves to true if the path exists (and matches the type if specified), otherwise false.
+ */
+export const exists = async (fs: FS, path: string, type: string = ""): Promise<boolean> => {
+
+  try {
+    // Check if path exists. e.g. if(exists(getCWD()))
+    const stats = await fs.promises.stat(path);
+
+    // If type is specified, also check if it matches (e.g. "dir" or "file")
+    if (type != "") {
+      return stats.type == type ? true : false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+
 };

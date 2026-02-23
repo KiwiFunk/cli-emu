@@ -2,7 +2,7 @@
 import { useTerminalStore } from "../../store/useTerminalStore.ts";
 import fs from '../fileSystem.ts';
 import type { CommandContext } from "../../types.ts";
-import { resolvePath } from "./helpers.ts";
+import { resolvePath, exists } from "./helpers.ts";
 
 /**
  *  Finds and returns the contents of a directory, with options for showing hidden files and long format.
@@ -156,8 +156,7 @@ export async function cd(ctx: CommandContext): Promise<string> {
 
   try {
     // Check if target path exists and is a directory. If not, return appropriate error message.
-    const stats = await fs.promises.stat(targetPath);
-    if (stats.type !== 'dir') return `cd: ${target}: Not a directory`;
+    if (!(await exists(fs, targetPath, 'dir'))) return `cd: ${target}: No such directory`;
 
     state.setCwd(targetPath);
     return "";
