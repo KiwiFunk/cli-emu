@@ -2,23 +2,7 @@
 import { useTerminalStore } from "../../store/useTerminalStore.ts";
 import fs from '../fileSystem.ts';
 import type { CommandContext } from "../../types.ts";
-
-/**
- * Helper to resolve relative or absolute paths against the CWD
- */
-const resolvePath = (input: string): string => {
-  const cwd = useTerminalStore.getState().cwd;
-
-  if (input == ".") return cwd;
-
-  const combined = input.startsWith('/') ? input : `${cwd}/${input}`;
-  // Normalize: remove double slashes and trailing slashes (except root)
-  let normalized = combined.replace(/\/+/g, '/');
-  if (normalized.length > 1 && normalized.endsWith('/')) {
-    normalized = normalized.slice(0, -1);
-  }
-  return normalized || '/';
-};
+import { resolvePath } from "./helpers.ts";
 
 /**
  *  Finds and returns the contents of a directory, with options for showing hidden files and long format.
