@@ -1,4 +1,5 @@
 import * as shell from "./shell";
+import * as git from "./git";
 
 // Import type definitions
 import type { CommandContext, CommandFn } from "../../types.ts";
@@ -74,15 +75,14 @@ export async function dispatchCommand(input: string): Promise<string> {
     "help": () => Promise.resolve("Available: ls, cd, pwd, touch, help"),
 
     // Subcommands
-    "git": async (ctx) => {
-      const subcommand = ctx.args[0];
-      const subCtx = { ...ctx, args: ctx.args.slice(1) };
+    "git": async (subcmd) => {
 
-      if (subcommand === 'init') return gitCommands.init(subCtx);
-
-      return `git: '${subcommand}' is not a git command`;
-    },
-
+      const commands: Record<string, CommandFn> = {
+        "init": git.init,
+        "add": git.add,
+      };
+      return commands[subcmd];
+    }
   };
 
   // Look up the command handler in the dict. If not found, return error message.
