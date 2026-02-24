@@ -14,7 +14,7 @@ export async function main(ctx: CommandContext): Promise<string> {
 
   const subcommands: Record<string, (ctx: CommandContext) => Promise<string>> = {
     "init": init,
-    "add": add,
+    //"add": add,
     "status": async () => "Status: Not yet implemented",
   };
 

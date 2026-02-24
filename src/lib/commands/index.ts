@@ -1,10 +1,48 @@
+// Imports
 import * as shell from "./shell";
 import * as git from "./git";
-
-// Import type definitions
 import type { CommandContext, CommandFn } from "../../types.ts";
 
-const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm"];
+/**
+ * Register command modules to be accessible within the environment.
+ */
+ const registry: Record<string, CommandFn> = {
+  // Base Shell Commands
+  "ls": shell.ls,
+  "pwd": shell.pwd,
+  "mkdir": shell.mkdir,
+  "touch": shell.touch,
+  "cd": shell.cd,
+
+  // Complex Modules
+  "git": git.main, // One entry point for the whole git module
+
+  // Help System
+  "help": async () => `Available commands: ${Object.keys(registry).join(", ")}`
+ };
+
+const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm", "node"]
+
+/**
+ * Dispatch a command from a given input string.
+ * This function is the entry point for processing user input and routing it to the appropriate command handler.
+ * @param String input - The raw command string entered by the user.
+ * @returns - The output string from the command handler, or an error message if the command is not found or fails.
+ */
+ export async function dispatchCommand(input: string): Promise<string> {
+   const { cmd, subcmd, ctx } = parseInput(input);
+   if (!cmd) return "";
+
+   const handler = registry[cmd];
+   if (!handler) return `Command not found: ${cmd}.`;
+
+   try {
+     // Attach subcmd to the context so the module knows what to do
+     return await handler({ ...ctx, subcmd });
+   } catch (err: unknown) {
+     return `Error: ${(err as Error).message || "Failed to execute command"}`;
+   }
+ }
 
 /**
  *  Parse the input string into a command and its context.
@@ -50,53 +88,4 @@ function parseInput(input: string): { cmd: string, subcmd: string | null; ctx: C
   });
 
   return { cmd, subcmd, ctx: { args, flags, raw: input } };
-}
-
-/**
- * Dispatch a command from a given input string.
- * This function is the entry point for processing user input and routing it to the appropriate command handler.
- * @param String input - The raw command string entered by the user.
- * @returns - The output string from the command handler, or an error message if the command is not found or fails.
- */
-export async function dispatchCommand(input: string): Promise<string> {
-
-  // Parse input and deconstruct command and context.
-  const { cmd, ctx } = parseInput(input);
-
-  if (!cmd) return "";
-
-  // Dict mapping command strings to their handler functions.
-  const commands: Record<string, CommandFn> = {
-    "ls": shell.ls,
-    "pwd": shell.pwd,
-    "mkdir": shell.mkdir,
-    "touch": shell.touch,
-    "cd": shell.cd,
-    "help": () => Promise.resolve("Available: ls, cd, pwd, touch, help"),
-
-    // Subcommands
-    "git": async (subcmd) => {
-
-      const commands: Record<string, CommandFn> = {
-        "init": git.init,
-        "add": git.add,
-      };
-      return commands[subcmd];
-    }
-  };
-
-  // Look up the command handler in the dict. If not found, return error message.
-  const handler = commands[cmd];
-
-  if (!handler) {
-    return `Command not found: ${cmd}. Type 'help' for options.`;
-  }
-
-  // Dispatch to the handler with context.
-  try {
-    return handler(ctx);
-  } catch (err) {
-    console.error(err);
-    return `Error: Failed to execute ${cmd}`;
-  }
 }
