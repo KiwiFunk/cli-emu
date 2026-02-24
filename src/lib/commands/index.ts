@@ -37,8 +37,8 @@ const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm", "node"]
    if (!handler) return `Command not found: ${cmd}.`;
 
    try {
-     // Attach subcmd to the context so the module knows what to do
-     return await handler({ ...ctx, subcmd });
+     // If the command has a subcmd, pass it in the context. Otherwise, just pass the context
+     return subcmd ? await handler({ ...ctx, subcmd }) : await handler(ctx);
    } catch (err: unknown) {
      return `Error: ${(err as Error).message || "Failed to execute command"}`;
    }

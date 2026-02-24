@@ -28,7 +28,7 @@ export async function main(ctx: CommandContext): Promise<string> {
 // git init <directory> Create if doesnt exist.
 // git init
 export async function init(ctx: CommandContext): Promise<string> {
-  const { flags, args } = ctx;
+  const { args } = ctx;
 
   // No directory specified, initialize in current working directory
   if (args.length === 0) {
