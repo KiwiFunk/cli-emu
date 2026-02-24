@@ -5,8 +5,24 @@ import type { CommandContext } from "../../types.ts";
 import { resolvePath, exists } from './helpers.ts';
 import { mkdir } from './shell.ts';
 
+/**
+ * Internal Git Router
+ * Routes git commands using the subcmd property of the context.
+ */
+export async function main(ctx: CommandContext): Promise<string> {
+  const { subcmd } = ctx;
 
+  const subcommands: Record<string, (ctx: CommandContext) => Promise<string>> = {
+    "init": init,
+    "add": add,
+    "status": async () => "Status: Not yet implemented",
+  };
 
+  const handler = subcommands[subcmd || ""];
+  if (!handler) return subcmd ? `git: '${subcmd}' is not a git command.` : "usage: git <command>";
+
+  return await handler(ctx);
+}
 
 // Need to handle git init - create in getCwd
 // git init <directory> Create if doesnt exist.
