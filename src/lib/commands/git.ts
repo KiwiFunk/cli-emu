@@ -61,6 +61,7 @@ export async function init(ctx: CommandContext): Promise<string> {
 
 
 // git add <file>
+/*
 export async function add(ctx: CommandContext): Promise<string> {
 
   const { args } = ctx;
@@ -75,6 +76,7 @@ export async function add(ctx: CommandContext): Promise<string> {
   }
 
 };
+*/
 
 // git commit -m "message"
 
