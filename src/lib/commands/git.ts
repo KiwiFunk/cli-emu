@@ -129,11 +129,11 @@ export async function commit(ctx: CommandContext): Promise<string> {
 }
 
 // For these we will need to simulate a remote repo with FS or in memory
-
-export async function push(ctx: CommandContext): Promise<string> {
+// Preface with _ as they dont actually make use of context
+export async function push(_ctx: CommandContext): Promise<string> {
   return "Everything up-to-date";
 }
 
-export async function pull(ctx: CommandContext): Promise<string> {
+export async function pull(_ctx: CommandContext): Promise<string> {
   return "Already up-to-date.";
 }
