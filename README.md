@@ -44,3 +44,30 @@ This is a pure JavaScript implementation of git that can run in the browser. It 
 
 ### `zustand`
 This is a small, fast, and scalable state management library for React. It will allow us to manage the state of our application, such as the current file system structure, git history, and UI state (like which commit is selected). It provides a simple API for creating a global store that can be accessed and updated from any component in our application.
+
+## Simulating a repo
+We actually use the same file system for both the users 'local' terminal environment, and the 'remote' location. The isolation is handled strictly through the directory path. CLI is scoped to `home/user`, whilst our 'remote' repo lives in `/remote/`.
+
+### But how do we simulate `origin` and `remote`?
+This is a really neat feature of `isomorphic-git`.  It contains the concept of remotes stored in the repo's config, this allows us to programmatically add a remote pointing to our local path. 
+```js
+await git.addRemote({
+  fs,
+  dir: '/home/user/myrepo',
+  remote: 'origin',
+  url: '/remote/myrepo.git'  // local path, not a real URL!
+})
+```
+
+From the user's perspective, `git remote -v` would show `origin` just like real git. They'd never know it's a local path. This gives you realistic `push`/`pull`/`clone` behaviour without any network calls.
+
+**For cloning**, isomorphic-git supports cloning from a local path too — so `git clone /remote/myrepo.git myrepo` would work exactly like cloning from GitHub from the user's perspective.
+```
+/home/user/myrepo/          ← user's working directory
+  .git/                     ← local git history
+    config                  ← contains: [remote "origin"] url=/remote/myrepo.git
+
+/remote/                    ← hidden from CLI, user can't cd here
+  myrepo.git/               ← bare repo, the "GitHub server"
+
+```
