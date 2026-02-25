@@ -96,7 +96,7 @@ export async function add(ctx: CommandContext): Promise<string> {
     }
     return `added ${args.length} file(s)`;
   } catch (err: unknown) {
-    return `git: ${err.message}`;
+    return `git: ${(err as Error).message}`;
   }
 }
 
