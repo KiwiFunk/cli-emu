@@ -24,9 +24,13 @@ export async function main(ctx: CommandContext): Promise<string> {
   return await handler(ctx);
 }
 
-// Need to handle git init - create in getCwd
-// git init <directory> Create if doesnt exist.
-// git init
+/**
+ * Initializes a new Git repository. If a directory is specified, it will initialize there.
+ * If the directory doesn't exist, it will be created first.
+ * If no directory is specified, it initializes in the current working directory.
+ * @param ctx - A context object from the dispatcher containing any arguments and flags
+ * @returns - An empty string on success, or an error message if the directory cannot be created or initialized.
+ */
 export async function init(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
 
@@ -79,6 +83,22 @@ export async function add(ctx: CommandContext): Promise<string> {
 */
 
 // git commit -m "message"
+export function commit(ctx: CommandContext): string {
+
+  const { flags, args } = ctx;
+
+  // If no flags provided, return error
+  if (Object.keys(flags).length === 0) {
+    return "git commit: missing commit message. Use -m \"message\" to specify a message.";
+  }
+
+  // Handle different flags and args
+  if (flags.m) {
+
+  } else if (flags.amend)
+
+  }
+}
 
 // git pull
 
