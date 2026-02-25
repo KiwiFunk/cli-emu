@@ -95,30 +95,45 @@ export async function add(ctx: CommandContext): Promise<string> {
       await git.add({ fs, dir, filepath });
     }
     return `added ${args.length} file(s)`;
-  } catch (err: any) {
+  } catch (err: unknown) {
     return `git: ${err.message}`;
   }
 }
 
 
 // git commit -m "message"
-export function commit(ctx: CommandContext): string {
-
+export async function commit(ctx: CommandContext): Promise<string> {
   const { flags, args } = ctx;
 
-  // If no flags provided, return error
-  if (Object.keys(flags).length === 0) {
-    return "git commit: missing commit message. Use -m \"message\" to specify a message.";
-  }
+  if (flags.length == '0') return "";
 
-  // Handle different flags and args
-  if (flags.m) {
+  const message = args[0];
 
-  } else if (flags.amend)
+  if (!message) return "error: switch `m' requires a value";
 
+  try {
+    const sha = await git.commit({
+      fs,
+      dir: getCwd(),
+      message,
+      author: {
+        name: "Student Learner",
+        email: "student@example.local",
+      },
+    });
+    // Return a message similar to the default git commit output, showing the first 7 characters of the commit SHA and the commit message
+    return `[main ${sha.substring(0, 7)}] ${message}`;
+  } catch {
+    return `nothing to commit, working tree clean`;
   }
 }
 
-// git pull
+// For these we will need to simulate a remote repo with FS or in memory
 
-// git push
+export async function push(ctx: CommandContext): Promise<string> {
+  return "Everything up-to-date";
+}
+
+export async function pull(ctx: CommandContext): Promise<string> {
+  return "Already up-to-date.";
+}
