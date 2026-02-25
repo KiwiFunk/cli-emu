@@ -65,22 +65,41 @@ export async function init(ctx: CommandContext): Promise<string> {
 
 
 // git add <file>
-/*
 export async function add(ctx: CommandContext): Promise<string> {
 
-  const { args } = ctx;
+  const { args } = ctx;   // What files are we staging? ('.' for all files in cwd, or specific file paths)
+  const dir = getCwd();   // Current working directory from Zustand store
 
-  // Isomorphic-Git can't handle '.' by default, so walk directory and add each file individually
-  if (ctx.args == ".") {
-
-  }
+  if (args.length == 0) return "git add: missing file operand. Use 'git add <file>' to specify a file, or 'git add .' to stage all files in the current directory.";
 
   try {
-    return "";
-  }
+    // Isomorphic-Git can't handle '.' by default, so walk directory and add each file individually
+    if (args[0] === ".") {
+      // Get the status of all files in the directory
+      const matrix = await git.statusMatrix({ fs, dir });
 
-};
-*/
+      // Filter for files that are modified, new (untracked), or deleted
+      // row[1] = head, row[2] = workdir, row[3] = stage
+      const filePaths = matrix
+        .filter(row => row[2] !== row[3])
+        .map(row => row[0]);
+
+      for (const filepath of filePaths) {
+        await git.add({ fs, dir, filepath });
+      }
+      return `added ${filePaths.length} files`;
+    }
+
+    // Add each specified file individually
+    for (const filepath of args) {
+      await git.add({ fs, dir, filepath });
+    }
+    return `added ${args.length} file(s)`;
+  } catch (err: any) {
+    return `git: ${err.message}`;
+  }
+}
+
 
 // git commit -m "message"
 export function commit(ctx: CommandContext): string {
