@@ -45,6 +45,15 @@ This is a pure JavaScript implementation of git that can run in the browser. It 
 ### `zustand`
 This is a small, fast, and scalable state management library for React. It will allow us to manage the state of our application, such as the current file system structure, git history, and UI state (like which commit is selected). It provides a simple API for creating a global store that can be accessed and updated from any component in our application.
 
+## Other dependencies
+
+#### Lucide Icons
+
+#### Tailwind 
+
+
+
+
 ## Simulating a repo
 We actually use the same file system for both the users 'local' terminal environment, and the 'remote' location. The isolation is handled strictly through the directory path. CLI is scoped to `home/user`, whilst our 'remote' repo lives in `/remote/`.
 
