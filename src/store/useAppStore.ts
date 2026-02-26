@@ -7,12 +7,7 @@ interface AppStore {
   gitRevision: number;
 }
 
-export const useAppStore = create<AppStore>(() => ({
+export const useAppStore = create<AppStore>((set, get) => ({
   gitRevision: 0,
+  bumpRevision: () => set({ gitRevision: get().gitRevision + 1 }),
 }));
-
-export function bumpRevision(): void {
-  const current = useAppStore.getState().gitRevision;
-  const next = current + 1;
-  useAppStore.setState({ gitRevision: next });
-}

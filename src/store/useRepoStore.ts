@@ -10,6 +10,7 @@ interface RepoStore {
 }
 
 export const useRepoStore = create<RepoStore>((set) => ({
-  repoDir: '/remote/',
+  // Repo does not exist on startup, init as null
+  repoDir: null,
   setRepoDir: (newDir) => set({ repoDir: newDir }),
 }));
