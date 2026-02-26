@@ -3,15 +3,23 @@
 
 function BrowserFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-md shadow-md w-full h-full flex flex-col">
-      <div className="bg-gray-200 p-2 rounded-t-md">
-        <span className="text-sm font-semibold">Browser Title</span>
+    <>
+      <div>
+        {/* Tabs Bar */}
+        <div className="flex items-center gap-2 p-2 bg-slate-800 rounded-t-md">
+
+        </div>
+        {/* Address Bar */}
+        <div>
+
+        </div>
       </div>
 
-      <div className="flex-1 p-4 overflow-auto">
+      {/* Content Area */}
+      <div>
         {children}
       </div>
-    </div>
+    </>
   );
 }
 
