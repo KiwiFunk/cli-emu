@@ -1,6 +1,7 @@
 import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import Terminal from '../terminal/Terminal';
+import BrowserFrame from '../browser/BrowserFrame';
 
 const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
 
@@ -20,7 +21,9 @@ function SplitView({ className }: SplitViewProps) {
         {/* In TSX, we need to wrap the template literal in {} to say 'hey, switch to javascript mode!' */}
         <Panel minSize="40%" className={`${panelStyles}`}>
           {/* Browser Window Goes Here */}
-            left
+          <BrowserFrame>
+              <p>Test12334456457.</p>
+          </BrowserFrame>
         </Panel>
 
         <Separator
