@@ -5,16 +5,11 @@
 import { create } from 'zustand';
 
 interface RepoStore {
-  cwd: string;
-  setCwd: (newCwd: string) => void;
+  repoDir: string | null;
+  setRepoDir: (newDir: string) => void;
 }
 
-// Zustand store is just a hook!
 export const useRepoStore = create<RepoStore>((set) => ({
-  cwd: '/',
-  setCwd: (newCwd) => set({ cwd: newCwd }),
+  repoDir: '/remote/',
+  setRepoDir: (newDir) => set({ repoDir: newDir }),
 }));
-
-export function getCwd(): string {
-  return useRepoStore.getState().cwd;
-}
