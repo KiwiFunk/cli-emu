@@ -1,5 +1,6 @@
 // Shell commands (ls, cd, mkdir, touch, cat, echo etc.)
 import { useTerminalStore } from "../../store/useTerminalStore.ts";
+import FS from '@isomorphic-git/lightning-fs'
 import fs from '../fileSystem.ts';
 import type { CommandContext } from "../../types.ts";
 import { resolvePath, exists } from "./helpers.ts";
@@ -164,3 +165,14 @@ export async function cd(ctx: CommandContext): Promise<string> {
     return `cd: ${target}: No such file or directory`;
   }
 }
+
+// --- DEBUGGING COMMANDS ---
+
+/**
+ * Debugging command to clear the entire IndexedDB filesystem and reload the application.
+ */
+ export async function clearFS(): Promise<string> {
+   new FS('gitsim-fs', { wipe: true });
+   window.location.reload();
+   return "";
+ }
