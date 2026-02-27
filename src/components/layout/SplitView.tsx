@@ -3,6 +3,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 import Terminal from '../terminal/Terminal';
 import BrowserFrame from '../browser/BrowserFrame';
 import GithubRepo from '../browser/RepoView';
+import CreateRepoForm from '../browser/CreateRepoForm';
 
 const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
 
@@ -23,7 +24,9 @@ function SplitView({ className }: SplitViewProps) {
         <Panel minSize="40%" className={`${panelStyles}`}>
           {/* Browser Window Goes Here */}
           <BrowserFrame>
-              <GithubRepo hasRepo={true} />
+            {/* <CreateRepoForm onSubmit={(data) => console.log(data)} /> */}
+            <GithubRepo hasRepo={false} />
+
           </BrowserFrame>
         </Panel>
 
