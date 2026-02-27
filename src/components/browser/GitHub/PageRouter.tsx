@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { hasRemoteRepo } from "../../../lib/repo";
 
 // Import Pages
 import CreateRepoForm from "./CreateRepoForm";
@@ -11,9 +12,17 @@ function PageRouter() {
 
   const [view, setView] = useState<ViewState>('EMPTY');
 
-  const handleCreateRepo = () => {
-    setView('REPO_VIEW');
-  };
+  // Check on mount if a repo already exists in /remote/
+    useEffect(() => {
+      hasRemoteRepo().then(exists => {
+        if (exists) setView('REPO_VIEW');
+      });
+    }, []);
+
+    const handleCreateRepo = async (name: string, addReadme: boolean) => {
+      // await createRepo(name, addReadme);
+      setView('REPO_VIEW');
+    };
 
   return (
     <>
