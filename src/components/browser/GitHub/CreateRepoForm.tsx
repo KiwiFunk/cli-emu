@@ -1,6 +1,15 @@
+import { useState } from 'react';
 import { Book, Lock, ChevronDown, Info } from 'lucide-react';
 
-const CreateRepoForm = ({ onSubmit }: { onSubmit: () => void }) => {
+const CreateRepoForm = ({ onSubmit }: { onSubmit: (name: string, addReadme: boolean) => void }) => {
+
+  const [repoName, setRepoName] = useState('');
+  const [addReadme, setAddReadme] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(repoName, addReadme);  // pass values up to router
+  };
 
   return (
     <div className="bg-[#0d1117] min-h-full text-[#c9d1d9] font-sans">
@@ -18,7 +27,7 @@ const CreateRepoForm = ({ onSubmit }: { onSubmit: () => void }) => {
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* Owner & Repo Name */}
           <div className="flex flex-col md:flex-row items-start md:items-end gap-2">
@@ -36,6 +45,8 @@ const CreateRepoForm = ({ onSubmit }: { onSubmit: () => void }) => {
               <label className="block font-semibold mb-2 text-[#f0f6fc]">Repository name *</label>
               <input
                 type="text"
+                value={repoName}
+                onChange={(e) => setRepoName(e.target.value)}
                 className="w-full md:w-80 bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-sm focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] outline-none transition-all"
                 required
               />
@@ -94,7 +105,7 @@ const CreateRepoForm = ({ onSubmit }: { onSubmit: () => void }) => {
           <div className="space-y-4">
             <h3 className="font-semibold text-[#f0f6fc]">Initialize this repository with:</h3>
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="readme" className="accent-[#58a6ff]" />
+              <input type="checkbox" id="readme" className="accent-[#58a6ff]" checked={addReadme} onChange={(e) => setAddReadme(e.target.checked)} />
               <label htmlFor="readme" className="text-sm font-semibold text-[#f0f6fc]">Add a README file</label>
             </div>
             <p className="text-xs text-[#8b949e] ml-6 -mt-3">READMEs can be used as longer descriptions. <u>About READMEs</u></p>
