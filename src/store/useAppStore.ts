@@ -5,6 +5,7 @@ import { create } from 'zustand';
 
 interface AppStore {
   gitRevision: number;
+  bumpRevision: () => void;
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
