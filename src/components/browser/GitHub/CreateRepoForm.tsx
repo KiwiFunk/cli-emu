@@ -1,10 +1,6 @@
 import { Book, Lock, ChevronDown, Info } from 'lucide-react';
 
-const CreateRepoForm = () => {
-
-  const handleSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-  };
+const CreateRepoForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   return (
     <div className="bg-[#0d1117] min-h-full text-[#c9d1d9] font-sans">
@@ -22,7 +18,7 @@ const CreateRepoForm = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={onSubmit} className="space-y-6">
 
           {/* Owner & Repo Name */}
           <div className="flex flex-col md:flex-row items-start md:items-end gap-2">

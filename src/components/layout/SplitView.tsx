@@ -2,8 +2,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import Terminal from '../terminal/Terminal';
 import BrowserFrame from '../browser/BrowserFrame';
-import GithubRepo from '../browser/RepoView';
-import CreateRepoForm from '../browser/CreateRepoForm';
+import PageRouter from '../browser/GitHub/PageRouter';
 
 const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
 
@@ -16,7 +15,7 @@ interface SplitViewProps {
  * @returns -
  */
 function SplitView({ className }: SplitViewProps) {
-  // In React, we need to destructure arguments, as React only recognizes a single 'props' argument.
+
   return (
     <>
       <Group className={`${className} w-full h-full flex`}>
@@ -24,9 +23,7 @@ function SplitView({ className }: SplitViewProps) {
         <Panel minSize="40%" className={`${panelStyles}`}>
           {/* Browser Window Goes Here */}
           <BrowserFrame>
-            {/* <CreateRepoForm onSubmit={(data) => console.log(data)} /> */}
-            <GithubRepo hasRepo={false} />
-
+            <PageRouter />
           </BrowserFrame>
         </Panel>
 

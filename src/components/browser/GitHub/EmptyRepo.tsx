@@ -1,4 +1,8 @@
-const EmptyState = () => {
+interface EmptyStateProps {
+  openForm: () => void;
+}
+
+const EmptyState = ({ openForm }: EmptyStateProps) => {
 
   return (
     <div className="bg-[#0d1117] min-h-full text-[#c9d1d9] p-8 font-sans">
@@ -19,6 +23,7 @@ const EmptyState = () => {
 
         <h3 className="font-semibold mb-4">...don't want to use the CLI? Use the web interface instead!</h3>
         <button
+          onClick={openForm}
           className="bg-[#238636] hover:bg-[#2ea043] disabled:opacity-50 disabled:bg-[#238636] text-white px-5 py-2 rounded-md font-semibold transition-colors shadow-sm cursor-pointer"
         >
           Create New Repository
