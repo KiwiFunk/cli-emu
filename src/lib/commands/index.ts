@@ -18,7 +18,10 @@ import type { CommandContext, CommandFn } from "../../types.ts";
   "git": git.main, // One entry point for the whole git module
 
   // Help System
-  "help": async () => `Available commands: ${Object.keys(registry).join(", ")}`
+   "help": async () => `Available commands: ${Object.keys(registry).join(", ")}`,
+
+   // Debugging
+   "clearfs": shell.clearFS,
  };
 
 const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm", "node"]
