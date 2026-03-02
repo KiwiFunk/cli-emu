@@ -3,6 +3,7 @@ import { Book, Folder, FileText, ChevronDown, Plus, Play, Shield, Code, Settings
 
 const GithubRepo = () => {
 
+  // Need to fix store not repopulating on refresh - only works when creating currently
   const repoName = getRepoDir()?.split('/').pop()?.replace('.git', '') ?? 'my-cool-repo';
 
   return (
