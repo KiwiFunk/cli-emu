@@ -17,6 +17,7 @@ export async function main(ctx: CommandContext): Promise<string> {
     "remote": remote,
     //"clone": clone,
     "add": add,
+    "commit": commit,
     "status": async () => "Status: Not yet implemented",
   };
 
