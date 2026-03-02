@@ -253,13 +253,43 @@ export async function commit(ctx: CommandContext): Promise<string> {
   }
 }
 
-// For these we will need to simulate a remote repo with FS or in memory
-// Preface with _ as they dont actually make use of context
-/*
-export async function push(_ctx: CommandContext): Promise<string> {
-  return "Everything up-to-date";
-}
+export async function push(ctx: CommandContext): Promise<string> {
+  const { args } = ctx;
+  const dir = getCwd();
+  const remoteName = args[0] || 'origin';
+  const branchName = args[1] || 'main'; // Assume pushing to main for teaching
 
+  try {
+    // Read URL from the config
+    const remotes = await git.listRemotes({ fs, dir });
+    const remoteConfig = remotes.find(r => r.remote === remoteName);
+    if (!remoteConfig) return `fatal: '${remoteName}' does not appear to be a git repository`;
+
+    // Translate to path for LightningFS.
+    const localRemotePath = urlToPath(remoteConfig.url);
+    if (!localRemotePath) return `fatal: invalid remote URL`;
+
+    // Execute the push natively using local path.
+    // Starts with '/', so isomorphic-git uses `fs` and doesn't ask for `http`.
+    const pushResult = await git.push({
+      fs,
+      dir,
+      remote: remoteName,
+      url: localRemotePath, // The override that makes the magic happen
+      ref: branchName
+    });
+
+    if (pushResult.ok) {
+      return `To ${remoteConfig.url}\n   ${branchName} -> ${branchName}`;
+    } else {
+      return `error: failed to push to '${remoteName}'\nReason: ${pushResult.error}`;
+    }
+
+  } catch (err: unknown) {
+    return `fatal: ${(err as Error).message}`;
+  }
+}
+/*
 export async function pull(_ctx: CommandContext): Promise<string> {
   return "Already up-to-date.";
 }
