@@ -216,7 +216,11 @@ export async function add(ctx: CommandContext): Promise<string> {
     }
     return `added ${args.length} file(s)`;
   } catch (err: unknown) {
-    return `git: ${(err as Error).message}`;
+    const msg = (err as Error).message ?? '';
+    if (msg.includes('ENOENT') || msg.includes('does not exist')) {
+      return `fatal: pathspec '${args[0]}' did not match any files`;
+    }
+    return `error: ${msg}`;
   }
 }
 
