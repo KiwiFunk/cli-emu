@@ -1,20 +1,73 @@
-import { getRepoDir } from '../../../store/useRepoStore';
-import { Book, Folder, FileText, ChevronDown, Plus, Play, Shield, Code, Settings, Star, GitFork, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getRepoDir } from '../../../store/useRepoStore';     // Access the current repo directory from the store
+import { getFileTree } from '../../../lib/repo';              // Allows navigating the file tree of the repo
+
+import {                                                      // Lucide Icon Imports
+  Book, Folder, FileText, ChevronDown, Play, Code,
+  Settings, Star, GitFork, Eye
+} from 'lucide-react';
+
+// Define data structs
+interface TreeEntry {
+  name: string;
+  isDir: boolean;
+  path: string;
+}
+
+interface FileRowProps {
+  icon: React.ReactNode;
+  name: string;
+  message: string;
+  time: string;
+  onClick: () => void;
+}
+
+interface RepoActionButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  count: string | number;
+}
 
 const GithubRepo = () => {
 
-  // Need to fix store not repopulating on refresh - only works when creating currently
-  const repoName = getRepoDir()?.split('/').pop()?.replace('.git', '') ?? 'my-cool-repo';
+  // Get the current repo from the Zustand store. This is set when a user enters a repo from index.
+  const repoDir = getRepoDir();
+  const repoName = repoDir ? repoDir.split('/').pop()?.replace('.git', '') : 'my-cool-repo';
+
+  const [currentPath, setCurrentPath] = useState<string>("");   // Current path within repo
+  const [entries, setEntries] = useState<TreeEntry[]>([]);      // Files/folders at the current path
+  const [loading, setLoading] = useState(true);                 // Loading state for repo contents
+
+  // Fetch file tree whenever the path or repo changes. Update to memoize??
+  useEffect(() => {
+    const loadFiles = async () => {
+      if (!repoDir) return;
+      setLoading(true);
+      // Hardcoded 'main' for ref, could eventually add branch switching functionality
+      const data = await getFileTree(repoDir, 'main', currentPath);
+      setEntries(data);
+      setLoading(false);
+    };
+
+    loadFiles();
+  }, [repoDir, currentPath]);
+
+  const navigateTo = (path: string) => setCurrentPath(path);
 
   return (
-    <div className="bg-[#0d1117] min-h-full text-[#c9d1d9] font-sans p-4 md:p-8">
-      {/* Repo Header */}
+    <div className="bg-[#0d1117] min-h-screen text-[#c9d1d9] font-sans p-4 md:p-8">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-2 text-xl">
           <Book size={18} className="text-[#8b949e]" />
           <span className="text-[#58a6ff] hover:underline cursor-pointer">username</span>
           <span className="text-[#8b949e]">/</span>
-          <span className="font-semibold text-[#58a6ff] hover:underline cursor-pointer">{repoName}</span>
+          <span
+            className="font-semibold text-[#58a6ff] hover:underline cursor-pointer"
+            onClick={() => navigateTo("")}
+          >
+            {repoName}
+          </span>
           <span className="px-2 py-0.5 text-xs border border-[#30363d] rounded-full text-[#8b949e]">Public</span>
         </div>
 
@@ -38,53 +91,115 @@ const GithubRepo = () => {
         </div>
       </div>
 
+      {/* Dynamic Breadcrumbs */}
+      <div className="flex items-center gap-2 mb-4 text-sm font-medium">
+        <button
+          onClick={() => navigateTo("")}
+          className="text-[#58a6ff] hover:underline flex items-center gap-1"
+        >
+          {repoName}
+        </button>
+        {currentPath.split('/').filter(Boolean).map((part, i, arr) => {
+          const pathSoFar = arr.slice(0, i + 1).join('/');
+          return (
+            <div key={pathSoFar} className="flex items-center gap-2">
+              <span className="text-[#8b949e]">/</span>
+              <button
+                onClick={() => navigateTo(pathSoFar)}
+                className="text-[#58a6ff] hover:underline"
+              >
+                {part}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
       {/* File List Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2 bg-[#21262d] px-3 py-1.5 rounded-md border border-[#30363d] text-sm font-medium hover:bg-[#30363d] cursor-pointer">
           <GitFork size={14} /> main <ChevronDown size={14} />
         </div>
-        <button className="bg-[#238636] hover:bg-[#2ea043] text-white px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2">
+        <button className="bg-[#238636] hover:bg-[#2ea043] text-white px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2 shadow-sm">
           <Code size={14} /> Code <ChevronDown size={14} />
         </button>
       </div>
 
-      {/* Mock File Explorer */}
+      {/* Real File Explorer */}
       <div className="border border-[#30363d] rounded-md overflow-hidden bg-[#0d1117]">
-        <div className="bg-[#161b22] p-4 border-b border-[#30363d] flex justify-between text-sm">
+        {/* Latest Commit Bar (Mocked info, but functional context) */}
+        <div className="bg-[#161b22] p-4 border-b border-[#30363d] flex justify-between items-center text-sm">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] text-white">JD</div>
-            <span className="font-semibold">Name Here</span>
-            <span className="text-[#8b949e]">Initial commit</span>
+            <div className="w-6 h-6 rounded-full bg-[#1f6feb] flex items-center justify-center text-[10px] text-white font-bold">
+              UN
+            </div>
+            <span className="font-semibold text-[#f0f6fc]">User Name</span>
+            <span className="text-[#8b949e] hidden sm:inline truncate max-w-xs">
+              Viewing {currentPath || 'root'}
+            </span>
           </div>
-          <span className="text-[#8b949e]">2 hours ago</span>
+          <div className="flex items-center gap-4">
+              {/* Static placeholder values for now */}
+             <span className="text-[#8b949e] text-xs">ae34f21</span>
+             <span className="text-[#8b949e]">just now</span>
+          </div>
         </div>
 
-        <FileRow icon={<Folder className="text-[#7d8590]" />} name="src" message="Add core logic" time="2h" />
-        <FileRow icon={<Folder className="text-[#7d8590]" />} name="public" message="Assets" time="5h" />
-        <FileRow icon={<FileText className="text-[#7d8590]" />} name="package.json" message="Init dependencies" time="2h" />
-        <FileRow icon={<FileText className="text-[#7d8590]" />} name="README.md" message="Update documentation" time="1h" />
+        {/* File Rows */}
+        <div className="divide-y divide-[#30363d]">
+          {loading ? (
+            <div className="p-8 text-center text-[#8b949e] animate-pulse">
+              Loading files...
+            </div>
+          ) : (
+            entries.map((entry) => (
+              <FileRow
+                key={entry.path}
+                icon={entry.isDir
+                  ? <Folder size={16} className="text-[#7d8590] fill-[#7d8590]/10" />
+                  : <FileText size={16} className="text-[#7d8590]" />
+                }
+                name={entry.name}
+                message={entry.isDir ? "Folder" : "Source File"}
+                time="now"
+                onClick={() => entry.isDir ? navigateTo(entry.path) : console.log("Open file:", entry.path)}
+              />
+            ))
+          )}
+          {!loading && entries.length === 0 && (
+            <div className="p-8 text-center text-[#8b949e]">
+              This directory is empty.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-// Sub Components
-const FileRow = ({ icon, name, message, time }: any) => (
-  <div className="flex items-center justify-between p-3 border-b border-[#30363d] hover:bg-[#161b22] text-sm transition-colors cursor-pointer">
+// Sub Component Helpers
+const FileRow = ({ icon, name, message, time, onClick }: FileRowProps) => (
+  <div
+    onClick={onClick}
+    className="flex items-center justify-between p-3 hover:bg-[#161b22] text-sm transition-colors cursor-pointer group"
+  >
     <div className="flex items-center gap-3 w-1/3">
-      {icon} <span className="hover:text-[#58a6ff] hover:underline">{name}</span>
+      {icon}
+      <span className="text-[#f0f6fc] group-hover:text-[#58a6ff] group-hover:underline truncate">
+        {name}
+      </span>
     </div>
-    <div className="text-[#8b949e] flex-1 truncate">{message}</div>
-    <div className="text-[#8b949e] text-right">{time} ago</div>
+    <div className="text-[#8b949e] flex-1 truncate px-4">{message}</div>
+    <div className="text-[#8b949e] text-right whitespace-nowrap">{time}</div>
   </div>
 );
 
-const RepoActionButton = ({ icon, label, count }: any) => (
-  <div className="flex items-center border border-[#30363d] rounded-md overflow-hidden text-xs font-semibold">
-    <button className="flex items-center gap-2 bg-[#21262d] hover:bg-[#30363d] px-3 py-1 border-r border-[#30363d]">
+const RepoActionButton = ({ icon, label, count }: RepoActionButtonProps) => (
+  <div className="flex items-center border border-[#30363d] rounded-md overflow-hidden text-xs font-semibold shadow-sm">
+    <button className="flex items-center gap-2 bg-[#21262d] hover:bg-[#30363d] px-3 py-1.5 border-r border-[#30363d] text-[#c9d1d9] transition-colors">
       {icon} {label}
     </button>
-    <span className="bg-[#161b22] px-3 py-1">{count}</span>
+    <span className="bg-[#161b22] px-3 py-1.5 text-[#8b949e]">{count}</span>
   </div>
 );
 
