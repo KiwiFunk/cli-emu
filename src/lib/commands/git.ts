@@ -14,7 +14,9 @@ export async function main(ctx: CommandContext): Promise<string> {
 
   const subcommands: Record<string, (ctx: CommandContext) => Promise<string>> = {
     "init": init,
-    //"add": add,
+    "remote": remote,
+    //"clone": clone,
+    "add": add,
     "status": async () => "Status: Not yet implemented",
   };
 
@@ -176,10 +178,11 @@ export async function remote(ctx: CommandContext): Promise<string> {
          `   or: git remote remove <name>`;
 }
 
-
+/*
 export async function clone(ctx: CommandContext): Promise<string> {
   // git clone
 }
+*/
 
 // git add <file>
 export async function add(ctx: CommandContext): Promise<string> {
