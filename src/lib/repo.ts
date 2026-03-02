@@ -29,3 +29,19 @@ export async function hasRemoteRepo(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Get all currently existing repos in /remote/. This is used to populate the repo index page.
+ * @returns A string array of all repos in /remote/. Returns an empty array if none exist or on error.
+ */
+export async function fetchRemoteRepos(): Promise<string[]> {
+  try {
+    const contents = await fs.promises.readdir('/remote');
+
+    return contents
+      .filter((f: string) => f.endsWith('.git'))
+      .map((repo) => `/remote/${repo}`);
+  } catch {
+    return [];
+  }
+}
