@@ -2,7 +2,7 @@ import git from 'isomorphic-git';
 import fs from '../fileSystem';
 import { getCwd } from "../../store/useTerminalStore.ts";
 import type { CommandContext } from "../../types.ts";
-import { resolvePath, exists } from './helpers.ts';
+import { resolvePath, exists, urlToPath } from './helpers.ts';
 import { mkdir } from './shell.ts';
 
 /**
@@ -63,11 +63,119 @@ export async function init(ctx: CommandContext): Promise<string> {
   }
 };
 
+/**
+ * Manage remote connections for the repository. This includes listing existing remotes, adding new ones, removing, and renaming them.
+ *
+ * Supported commands:
+ *  git remote                              list remote names
+ *  git remote -v                           list remotes with their URLs
+ *  git remote add <name> <url>             register a new remote e.g. `git remote add origin https://github.com/user/repo.git`
+ *  git remote remove <name>                remove a remote
+ *  git remote rename <old> <new>           rename a remote
+ *
+ *  Remote add dpes NOT check if it is valid - neither does real git. Check happens on Push
+ */
 export async function remote(ctx: CommandContext): Promise<string> {
-  // git remote add origin https://github.com/user/repo.git
-  // parse url into a file paths
-  // handle 'add' 'origin' parts
+  const { args, flags } = ctx;
+  const dir = getCwd();
+
+  // git remote
+  if (args.length === 0) {
+    try {
+      const remotes = await git.listRemotes({ fs, dir });
+
+      if (remotes.length === 0) return '';
+
+      if (flags['v']) {
+        // Show name + URL for both fetch and push, just like real git
+        return remotes
+          .flatMap(({ remote, url }) => [
+            `${remote}\t${url} (fetch)`,
+            `${remote}\t${url} (push)`,
+          ])
+          .join('\r\n');
+      }
+
+      // No -v: just the names, one per line
+      return remotes.map(r => r.remote).join('\r\n');
+
+    } catch {
+      return `fatal: not a git repository (or any of the parent directories): .git`;
+    }
+  }
+
+  const subAction = args[0];  // e.g. 'add', 'remove', 'rename'
+
+  // git remote add <name> <url>
+  if (subAction === 'add') {
+    const remoteName = args[1];
+    const remoteUrl  = args[2];
+
+    if (!remoteName || !remoteUrl) {
+      return `usage: git remote add <name> <url>`;
+    }
+
+    // Validate it at least looks like a github.com URL
+    if (urlToPath(remoteUrl) === null) {
+      return `error: invalid remote URL '${remoteUrl}'\n` +
+             `Hint: URLs should look like https://github.com/user/repo.git`;
+    }
+
+    try {
+      // Store the URL exactly as usr typed it — matches real git.
+      // urlToPath() is called at push time.
+      await git.addRemote({ fs, dir, remote: remoteName, url: remoteUrl });
+      return '';
+    } catch (err: unknown) {
+      const msg = (err as Error).message ?? '';
+      if (msg.includes('already exists')) {
+        return `error: remote ${remoteName} already exists.`;
+      }
+      return `error: ${msg}`;
+    }
+  }
+
+  // git remote remove <name>
+  if (subAction === 'remove' || subAction === 'rm') {
+    const remoteName = args[1];
+    if (!remoteName) return `usage: git remote remove <name>`;
+
+    try {
+      await git.deleteRemote({ fs, dir, remote: remoteName });
+      return '';  // Silent on success
+    } catch {
+      return `error: No such remote: '${remoteName}'`;
+    }
+  }
+
+  // git remote rename <old> <new>
+  if (subAction === 'rename') {
+    const oldName = args[1];
+    const newName = args[2];
+    if (!oldName || !newName) return `usage: git remote rename <old> <new>`;
+
+    try {
+      const remotes = await git.listRemotes({ fs, dir });
+      const existing = remotes.find(r => r.remote === oldName);
+      if (!existing) return `error: No such remote: '${oldName}'`;
+
+      // isomorphic-git has no renameRemote — delete and re-add with the stored URL
+      await git.deleteRemote({ fs, dir, remote: oldName });
+      await git.addRemote({ fs, dir, remote: newName, url: existing.url });
+      return '';  // Silent on success
+    } catch (err: unknown) {
+      return `error: ${(err as Error).message}`;
+    }
+  }
+
+  // Unknown subaction
+  return `error: Unknown subcommand: ${subAction}\n` +
+         `usage: git remote [-v]\n` +
+         `   or: git remote add <name> <url>\n` +
+         `   or: git remote rename <old> <new>\n` +
+         `   or: git remote remove <name>`;
 }
+
 
 export async function clone(ctx: CommandContext): Promise<string> {
   // git clone
