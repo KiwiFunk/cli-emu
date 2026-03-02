@@ -42,3 +42,25 @@ export const exists = async (fs: FS, path: string, type: string = ""): Promise<b
   }
 
 };
+
+/**
+ * Converts a URL into a path for the virtual filesystem.
+ * e.g. 'https://github.com/user/my-repo' -> '/remote/my-repo.git'
+ * Only called internally — the user always sees their original URL.
+ */
+export function urlToPath(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === 'github.com') {
+      const segments = parsed.pathname.split('/').filter(Boolean);
+      // Needs at least /user/repo
+      if (segments.length >= 2) {
+        const repoName = segments[segments.length - 1].replace(/\.git$/, '');
+        return `/remote/${repoName}.git`;
+      }
+    }
+  } catch {
+    // Not a valid URL
+  }
+  return null;
+}
