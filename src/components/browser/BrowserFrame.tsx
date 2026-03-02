@@ -1,7 +1,11 @@
 import React from 'react';
 import { Minus, Square, X, RotateCw, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { useAppStore } from '../../store/useAppStore';
 
 function BrowserFrame({ children }: { children: React.ReactNode }) {
+
+  const browserUrl = useAppStore(state => state.browserUrl);
+
   return (
     <div className="w-full max-w-4xl mx-auto overflow-hidden rounded-xl border border-slate-700 shadow-2xl bg-slate-900 h-full">
       {/* Top Bar: Tabs & Window Controls */}
@@ -41,7 +45,7 @@ function BrowserFrame({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full border border-slate-700 text-slate-400 text-sm focus-within:border-blue-500/50 transition-all">
           <Lock size={12} className="text-emerald-500" />
 
-          <span className="flex-1 truncate">localhost:3000/mockrepo</span>
+          <span className="flex-1 truncate">{browserUrl}</span>
 
         </div>
       </div>
