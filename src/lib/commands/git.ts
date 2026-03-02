@@ -63,6 +63,15 @@ export async function init(ctx: CommandContext): Promise<string> {
   }
 };
 
+export async function remote(ctx: CommandContext): Promise<string> {
+  // git remote add origin https://github.com/user/repo.git
+  // parse url into a file paths
+  // handle 'add' 'origin' parts
+}
+
+export async function clone(ctx: CommandContext): Promise<string> {
+  // git clone
+}
 
 // git add <file>
 export async function add(ctx: CommandContext): Promise<string> {

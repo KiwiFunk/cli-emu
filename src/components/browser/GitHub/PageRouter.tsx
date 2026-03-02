@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { hasRemoteRepo, createRepo } from "../../../lib/repo";
 import { useRepoStore } from "../../../store/useRepoStore";
+import { useAppStore } from "../../../store/useAppStore";
 
 // Import Pages
 import CreateRepoForm from "./CreateRepoForm";
@@ -10,34 +11,42 @@ import EmptyState from "./EmptyRepo";
 
 type ViewState = 'EMPTY' | 'CREATE_FORM' | 'REPO_INDEX' | 'REPO_VIEW';
 
+const BASE_URL = 'https://github.com';
+const USERNAME = 'user';
+
 function PageRouter() {
-
   const [view, setView] = useState<ViewState>('EMPTY');
+  const setBrowserUrl = useAppStore(state => state.setBrowserUrl);
 
-  // Check on mount if a repo already exists in /remote/
-    useEffect(() => {
-      hasRemoteRepo().then(exists => {
-        if (exists) setView('REPO_INDEX');
-      });
-    }, []);
+  // Helper to set view AND url in store
+  const navigate = (newView: ViewState, url: string) => {
+    setView(newView);
+    setBrowserUrl(url);
+  };
 
-    const handleCreateRepo = async (name: string, addReadme: boolean) => {
-      await createRepo(name, addReadme);
-      setView('REPO_VIEW');
-    };
+  useEffect(() => {
+    hasRemoteRepo().then(exists => {
+      if (exists) navigate('REPO_INDEX', `${BASE_URL}/${USERNAME}`);
+    });
+  }, []);
+
+  const handleCreateRepo = async (name: string, addReadme: boolean) => {
+    await createRepo(name, addReadme);
+    navigate('REPO_VIEW', `${BASE_URL}/${USERNAME}/${name}`);
+  };
 
   const handleSelectRepo = (repoDir: string) => {
-    // Update the store with the selected repo directory
+    const repoName = repoDir.split('/').pop()?.replace('.git', '') ?? '';
     useRepoStore.getState().setRepoDir(repoDir);
-    setView('REPO_VIEW');
-  }
+    navigate('REPO_VIEW', `${BASE_URL}/${USERNAME}/${repoName}`);
+  };
 
   return (
     <>
       {(() => {
         switch (view) {
           case 'EMPTY':
-            return <EmptyState openForm={() => setView('CREATE_FORM')} />;
+            return <EmptyState openForm={() => navigate('CREATE_FORM', `${BASE_URL}/new`)} />;
           case 'CREATE_FORM':
             return <CreateRepoForm onSubmit={handleCreateRepo} />;
           case 'REPO_INDEX':
