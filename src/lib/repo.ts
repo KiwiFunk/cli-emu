@@ -61,22 +61,48 @@ export async function getCommits(repoDir: string) {
  * Get the top-level file tree from the latest commit
  * @returns Array of objects with name and whether they are a directory.
  */
-export async function getFileTree(repoDir: string, ref: string) {
+export async function getFileTree(repoDir: string, ref: string, folderPath: string = "") {
   try {
-    // Get a flat list of all files in the commit
+    // Get the flat list of ALL files in the commit
     const files = await git.listFiles({ fs, dir: repoDir, ref });
 
+    // Ensure folderPath ends with a slash for easier filtering, unless it's root
+    const normalizedFolder = folderPath === "" || folderPath === "/"
+      ? ""
+      : folderPath.endsWith("/") ? folderPath : `${folderPath}/`;
+
     // De-duplicate top-level entries and determine if dir or file
-    return files.reduce((acc: { name: string, isDir: boolean }[], path) => {
-      const parts = path.split('/');            // Split path into parts
-      const name = parts[0];                    // Get the top-level entry (first part of the path)
-      const isDir = parts.length > 1;           // If there are multiple parts, it's a directory
-      if (!acc.find(e => e.name === name)) {    // Only add to accumulator if !exists.
-        acc.push({ name, isDir });
+    const entries = files.reduce((acc: { name: string, isDir: boolean, path: string }[], filePath) => {
+
+      // Only search within the provided folder path.
+      if (filePath.startsWith(normalizedFolder)) {
+
+        // Get the part of the path relative to the current folder
+        const relativePath = filePath.slice(normalizedFolder.length);
+        const parts = relativePath.split('/');
+
+        const name = parts[0];    // Get the top level entry in this folder (could be a file or a subfolder)
+        if (!name) return acc;    // Skip if empty (can happen with trailing slashes)
+
+        const isDir = parts.length > 1;             // If there are multiple parts, it's a directory
+        const fullPath = normalizedFolder + name;   // Construct the full relative path for this entry
+
+        // If we haven't seen this name at this level yet, add to accumulator
+        if (!acc.find(e => e.name === name)) {
+          acc.push({ name, isDir, path: fullPath });
+        }
       }
-      return acc;                               // Return accumulator for the next iteration
+      return acc;                                   // Return accumulator for the next iteration
     }, []);
-  } catch {
+
+    // Sort so directories appear before files, and then alphabetically within those groups
+    return entries.sort((a, b) => {
+      if (a.isDir === b.isDir) return a.name.localeCompare(b.name);
+      return a.isDir ? -1 : 1;
+    });
+
+  } catch (error) {
+    console.error("Error reading file tree:", error);
     return [];
   }
 }
