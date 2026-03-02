@@ -29,10 +29,3 @@ export async function hasRemoteRepo(): Promise<boolean> {
     return false;
   }
 }
-
-export async function getRepoName(): Promise<string | null> {
-  const repoDir = useRepoStore.getState().repoDir;
-  if (!repoDir) return null;
-  const match = repoDir.match(/\/remote\/(.+)\.git/);
-  return match ? match[1] : null;
-}

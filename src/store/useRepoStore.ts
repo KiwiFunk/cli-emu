@@ -14,3 +14,7 @@ export const useRepoStore = create<RepoStore>((set) => ({
   repoDir: null,
   setRepoDir: (newDir) => set({ repoDir: newDir }),
 }));
+
+export const getRepoDir = (): string | null => {
+  return useRepoStore.getState().repoDir;
+};

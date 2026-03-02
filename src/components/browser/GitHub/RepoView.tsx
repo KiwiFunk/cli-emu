@@ -1,6 +1,9 @@
+import { getRepoDir } from '../../../store/useRepoStore';
 import { Book, Folder, FileText, ChevronDown, Plus, Play, Shield, Code, Settings, Star, GitFork, Eye } from 'lucide-react';
 
 const GithubRepo = () => {
+
+  const repoName = getRepoDir()?.split('/').pop()?.replace('.git', '') ?? 'my-cool-repo';
 
   return (
     <div className="bg-[#0d1117] min-h-full text-[#c9d1d9] font-sans p-4 md:p-8">
@@ -10,7 +13,7 @@ const GithubRepo = () => {
           <Book size={18} className="text-[#8b949e]" />
           <span className="text-[#58a6ff] hover:underline cursor-pointer">username</span>
           <span className="text-[#8b949e]">/</span>
-          <span className="font-semibold text-[#58a6ff] hover:underline cursor-pointer">new-cool-project</span>
+          <span className="font-semibold text-[#58a6ff] hover:underline cursor-pointer">{repoName}</span>
           <span className="px-2 py-0.5 text-xs border border-[#30363d] rounded-full text-[#8b949e]">Public</span>
         </div>
 
