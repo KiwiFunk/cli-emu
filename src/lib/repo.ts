@@ -45,3 +45,38 @@ export async function fetchRemoteRepos(): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * Get the commit log for a repo
+ */
+export async function getCommits(repoDir: string) {
+  try {
+    return await git.log({ fs, dir: repoDir });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Get the top-level file tree from the latest commit
+ * @returns Array of objects with name and whether they are a directory.
+ */
+export async function getFileTree(repoDir: string, ref: string) {
+  try {
+    // Get a flat list of all files in the commit
+    const files = await git.listFiles({ fs, dir: repoDir, ref });
+
+    // De-duplicate top-level entries and determine if dir or file
+    return files.reduce((acc: { name: string, isDir: boolean }[], path) => {
+      const parts = path.split('/');            // Split path into parts
+      const name = parts[0];                    // Get the top-level entry (first part of the path)
+      const isDir = parts.length > 1;           // If there are multiple parts, it's a directory
+      if (!acc.find(e => e.name === name)) {    // Only add to accumulator if !exists.
+        acc.push({ name, isDir });
+      }
+      return acc;                               // Return accumulator for the next iteration
+    }, []);
+  } catch {
+    return [];
+  }
+}

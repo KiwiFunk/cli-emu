@@ -38,7 +38,7 @@ const RepoIndex: React.FC<RepoIndexProps> = ({ onSelectRepo }) => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 antialiased text-gray-900">
+    <div className=" bg-[#0d1117]max-w-5xl mx-auto px-6 py-10 antialiased text-gray-900">
       {/* Search and Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-6 mb-2">
         <div className="relative flex-1 max-w-md">
