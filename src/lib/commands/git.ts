@@ -40,7 +40,7 @@ export async function init(ctx: CommandContext): Promise<string> {
       fs,             // LightningFS instance
       dir: getCwd()   // from Zustand store
     });
-    return "";
+    return "Initialized empty Git repository in " + getCwd();
   }
 
   // Directory specified, initialize there.
@@ -49,7 +49,7 @@ export async function init(ctx: CommandContext): Promise<string> {
       fs,
       dir: resolvePath(args[0])
     });
-    return "";
+    return "Initialized empty Git repository in " + resolvePath(args[0]);
   }
 
   // If it doesn't exist, create it first.
@@ -59,7 +59,7 @@ export async function init(ctx: CommandContext): Promise<string> {
       fs,
       dir: resolvePath(args[0])
     });
-    return "";
+    return "Initialized empty Git repository in " + resolvePath(args[0]);
   }
 };
 
