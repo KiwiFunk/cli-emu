@@ -4,6 +4,7 @@ import { getCwd } from "../../store/useTerminalStore.ts";
 import type { CommandContext } from "../../types.ts";
 import { resolvePath, exists, urlToPath } from './helpers.ts';
 import { mkdir } from './shell.ts';
+import { useAppStore } from '../../store/useAppStore.ts';
 
 /**
  * Internal Git Router
