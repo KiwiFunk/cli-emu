@@ -376,7 +376,7 @@ export async function push(ctx: CommandContext): Promise<string> {
     // Resolve the remote branch SHA (may not exist yet — first push)
     let remoteSha: string | null = null;
     try {
-      remoteSha = await git.resolveRef({ fs, dir: localRemotePath, ref: `refs/heads/${branch}` });
+      remoteSha = await git.resolveRef({ fs, gitdir: localRemotePath, ref: `refs/heads/${branch}` });
     } catch { /* branch doesn't exist on remote yet */ }
 
     if (remoteSha === localSha) return 'Everything up-to-date';
@@ -385,7 +385,7 @@ export async function push(ctx: CommandContext): Promise<string> {
     await copyMissingObjects(`${dir}/.git`, localRemotePath, localSha);
 
     // Update the remote's branch ref
-    await git.writeRef({ fs, dir: localRemotePath, ref: `refs/heads/${branch}`, value: localSha, force: true });
+    await git.writeRef({ fs, gitdir: localRemotePath, ref: `refs/heads/${branch}`, value: localSha, force: true });
 
     // Update the store so the UI knows to re-render
     useAppStore.getState().bumpRevision();
@@ -432,7 +432,7 @@ export async function pull(ctx: CommandContext): Promise<string> {
     // Resolve remote branch SHA
     let remoteSha: string;
     try {
-      remoteSha = await git.resolveRef({ fs, dir: bareDir, ref: `refs/heads/${branch}` });
+      remoteSha = await git.resolveRef({ fs, gitdir: bareDir, ref: `refs/heads/${branch}` });
     } catch {
       return `fatal: couldn't find remote ref ${branch}`;
     }
