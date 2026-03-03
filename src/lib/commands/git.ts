@@ -297,7 +297,11 @@ export async function push(ctx: CommandContext): Promise<string> {
     // Read URL from the config
     const remotes = await git.listRemotes({ fs, dir });
     const remoteConfig = remotes.find(r => r.remote === remoteName);
-    if (!remoteConfig) return `fatal: '${remoteName}' does not appear to be a git repository`;
+    if (!remoteConfig) {
+      return `fatal: '${remoteName}' does not appear to be a git repository\n` +
+             `fatal: Could not read from remote repository.\n\n` +
+             `hint: Did you run 'git remote add ${remoteName} <url>'?`;
+    }
 
     // Translate to path for LightningFS.
     const localRemotePath = urlToPath(remoteConfig.url);
