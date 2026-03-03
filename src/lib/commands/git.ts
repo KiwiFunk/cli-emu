@@ -2,6 +2,7 @@ import git from 'isomorphic-git';
 import fs from '../fileSystem';
 import { getCwd } from "../../store/useTerminalStore.ts";
 import type { CommandContext } from "../../types.ts";
+import type { CommitObject, TreeEntry } from 'isomorphic-git';
 import { resolvePath, exists, urlToPath } from './helpers.ts';
 import { mkdir } from './shell.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -180,39 +181,92 @@ export async function remote(ctx: CommandContext): Promise<string> {
          `   or: git remote remove <name>`;
 }
 
+/**
+ * Copy all git objects reachable from a given SHA from one repo into another.
+ * Walks commit -> tree -> blob recursively.
+ *
+ * srcDir  = the .git folder (or bare repo folder) to read FROM
+ * destDir = the .git folder (or bare repo folder) to write INTO
+ */
+async function copyMissingObjects(srcDir: string, destDir: string, sha: string): Promise<void> {
+
+  const visited = new Set<string>();
+
+  async function copyObject(oid: string): Promise<void> {
+    if (visited.has(oid)) return;   // Exit condition for recursion
+    visited.add(oid);
+
+    // Already exists in destination? Skip.
+    try {
+      await git.readObject({ fs, gitdir: destDir, oid, format: 'deflated' });
+      return;
+    } catch { /* not there yet — continue */ }
+
+    // Read from source
+    const obj = await git.readObject({ fs, gitdir: srcDir, oid, format: 'parsed' });
+
+    if (obj.type === 'commit') {
+      const c = obj.object as CommitObject;
+      await git.writeCommit({ fs, gitdir: destDir, commit: c });
+      await copyObject(c.tree);
+      for (const parent of c.parent) await copyObject(parent);
+    } else if (obj.type === 'tree') {
+      const entries = obj.object as TreeEntry[];
+      await git.writeTree({ fs, gitdir: destDir, tree: entries });
+      for (const entry of entries) await copyObject(entry.oid);
+    } else if (obj.type === 'blob') {
+      await git.writeBlob({ fs, gitdir: destDir, blob: obj.object as Uint8Array });
+    }
+  }
+
+  await copyObject(sha);
+}
+
+/**
+ * git clone <url> [<directory>]
+ *
+ * Clones a remote repo by copying all objects, setting up refs, and checking out files.
+ * No HTTP needed — all done via local filesystem.
+ */
 export async function clone(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
-  const userUrl = args[0]; // e.g. https://github.com/student/repo.git
+  const userUrl = args[0];
+  if (!userUrl) return 'fatal: You must specify a repository to clone.';
 
-  if (!userUrl) return "fatal: You must specify a repository to clone.";
-
-  // Determine target directory folder
-  const urlParts = userUrl.split('/');
-  const repoName = urlParts[urlParts.length - 1].replace('.git', '');
+  // Extract repo name from URL for default directory name
+  const repoName = userUrl.split('/').pop()?.replace(/\.git$/, '') ?? '';
   const targetDir = args[1] ? resolvePath(args[1]) : resolvePath(repoName);
 
-  const localRemotePath = urlToPath(userUrl);
-  if (!localRemotePath) return `fatal: invalid repository URL`;
+  const bareDir = urlToPath(userUrl);
+  if (!bareDir) return 'fatal: invalid repository URL';
+  if (!(await exists(fs, bareDir, 'dir'))) return `fatal: repository '${userUrl}' not found`;
 
   try {
-    // If the remote doesn't exist in our filesystem, we can't clone it
-    if (!(await exists(fs, localRemotePath, "dir"))) {
-      return `fatal: repository '${userUrl}' not found`;
+    // Create target dir and init
+    await mkdir({ args: [targetDir], flags: { p: true } });
+    await git.init({ fs, dir: targetDir });
+
+    // Store the display URL as origin (same as real git)
+    await git.addRemote({ fs, dir: targetDir, remote: 'origin', url: userUrl });
+
+    // Resolve the remote's HEAD branch
+    let remoteSha: string;
+    try {
+      remoteSha = await git.resolveRef({ fs, dir: bareDir, ref: 'refs/heads/main' });
+    } catch {
+      // Empty repo — nothing to clone
+      return `Cloning into '${repoName}'...\nwarning: remote HEAD refers to nonexistent ref, unable to checkout.`;
     }
 
-    // Clone natively using the local lightning-fs path
-    await git.clone({
-      fs,
-      dir: targetDir,
-      url: localRemotePath, // Bypasses HTTP, uses local FS transport
-      singleBranch: true,
-      depth: 1 // Keeps the browser memory light for the teaching tool
-    });
+    // Copy all objects
+    await copyMissingObjects(bareDir, `${targetDir}/.git`, remoteSha);
 
-    // Update the remote URL to match the user's original input, so it looks right in `git remote -v` and works on push.
-    // By default, iso-git just saves `url = /remote/...` to the config.
-    await git.deleteRemote({ fs, dir: targetDir, remote: 'origin' });
-    await git.addRemote({ fs, dir: targetDir, remote: 'origin', url: userUrl });
+    // Set up local branch ref
+    await git.writeRef({ fs, dir: targetDir, ref: 'refs/heads/main', value: remoteSha, force: true });
+    await git.writeRef({ fs, dir: targetDir, ref: 'HEAD', value: 'refs/heads/main', force: true, symbolic: true });
+
+    // Checkout working tree
+    await git.checkout({ fs, dir: targetDir, ref: 'main', force: true });
 
     return `Cloning into '${repoName}'... done.`;
   } catch (err: unknown) {
@@ -344,8 +398,66 @@ export async function push(ctx: CommandContext): Promise<string> {
     return `error: failed to push some refs to '${remoteName}'\n${(err as Error).message}`;
   }
 }
-/*
-export async function pull(_ctx: CommandContext): Promise<string> {
-  return "Already up-to-date.";
+
+/**
+ * git pull [<remote>] [<branch>]
+ *
+ * Copies objects from the remote bare repo into the local repo,
+ * fast-forwards the local branch ref, and checks out the files.
+ * Defaults to `origin` and `main`.
+ */
+export async function pull(ctx: CommandContext): Promise<string> {
+  const { args } = ctx;
+  const dir = getCwd();
+  const remoteName = args[0] ?? 'origin';
+  const branch     = args[1] ?? 'main';
+
+  try {
+    const remotes = await git.listRemotes({ fs, dir });
+    const entry = remotes.find(r => r.remote === remoteName);
+    if (!entry) {
+      return `fatal: '${remoteName}' does not appear to be a git repository\n` +
+             `fatal: Could not read from remote repository.\n\n` +
+             `hint: Did you run 'git remote add ${remoteName} <url>'?`;
+    }
+
+    const bareDir = urlToPath(entry.url);
+    if (!bareDir) return `fatal: repository '${entry.url}' not found`;
+    if (!(await exists(fs, bareDir, 'dir'))) return `fatal: repository '${entry.url}' not found`;
+
+    // Resolve remote branch SHA
+    let remoteSha: string;
+    try {
+      remoteSha = await git.resolveRef({ fs, dir: bareDir, ref: `refs/heads/${branch}` });
+    } catch {
+      return `fatal: couldn't find remote ref ${branch}`;
+    }
+
+    // Resolve local branch SHA (may not exist yet)
+    let localSha: string | null = null;
+    try {
+      localSha = await git.resolveRef({ fs, dir, ref: `refs/heads/${branch}` });
+    } catch { /* no local branch yet */ }
+
+    if (localSha === remoteSha) return 'Already up to date.';
+
+    // Copy objects from remote into local
+    await copyMissingObjects(bareDir, `${dir}/.git`, remoteSha);
+
+    // Update local branch ref
+    await git.writeRef({ fs, dir, ref: `refs/heads/${branch}`, value: remoteSha, force: true });
+
+    // Make sure HEAD points at the branch
+    await git.writeRef({ fs, dir, ref: 'HEAD', value: `refs/heads/${branch}`, force: true, symbolic: true });
+
+    // Checkout the files into the working directory
+    await git.checkout({ fs, dir, ref: branch, force: true });
+
+    const shortLocal  = localSha ? localSha.slice(0, 7) : '0000000';
+    const shortRemote = remoteSha.slice(0, 7);
+    return `Updating ${shortLocal}..${shortRemote}\nFast-forward`;
+
+  } catch (err: unknown) {
+    return `error: ${(err as Error).message}`;
+  }
 }
-*/
