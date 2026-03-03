@@ -291,7 +291,7 @@ export async function push(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
   const dir = getCwd();
   const remoteName = args[0] || 'origin';
-  const branchName = args[1] || 'main'; // Assume pushing to main for teaching
+  const branch = args[1] || 'main'; // Assume pushing to main for teaching
 
   try {
     // Read URL from the config
@@ -307,24 +307,40 @@ export async function push(ctx: CommandContext): Promise<string> {
     const localRemotePath = urlToPath(remoteConfig.url);
     if (!localRemotePath) return `fatal: invalid remote URL`;
 
-    // Execute the push natively using local path.
-    // Starts with '/', so isomorphic-git uses `fs` and doesn't ask for `http`.
-    const pushResult = await git.push({
-      fs,
-      dir,
-      remote: remoteName,
-      url: localRemotePath, // The override that makes the magic happen
-      ref: branchName
-    });
-
-    if (pushResult.ok) {
-      return `To ${remoteConfig.url}\n   ${branchName} -> ${branchName}`;
-    } else {
-      return `error: failed to push to '${remoteName}'\nReason: ${pushResult.error}`;
+    // Resolve the local branch SHA
+    let localSha: string;
+    try {
+      localSha = await git.resolveRef({ fs, dir, ref: `refs/heads/${branch}` });
+    } catch {
+      return `error: src refspec ${branch} does not match any\n` +
+             `error: failed to push some refs to '${remoteConfig.url}'`;
     }
 
+    // Resolve the remote branch SHA (may not exist yet — first push)
+    let remoteSha: string | null = null;
+    try {
+      remoteSha = await git.resolveRef({ fs, dir: localRemotePath, ref: `refs/heads/${branch}` });
+    } catch { /* branch doesn't exist on remote yet */ }
+
+    if (remoteSha === localSha) return 'Everything up-to-date';
+
+    // Copy all objects the remote doesn't have. CREATE HELPER FUNCTION TO RECURSIVELY COPY.
+    await copyMissingObjects(`${dir}/.git`, localRemotePath, localSha);
+
+    // Update the remote's branch ref
+    await git.writeRef({ fs, dir: localRemotePath, ref: `refs/heads/${branch}`, value: localSha, force: true });
+
+    // Update the store so the UI knows to re-render
+    useAppStore.getState().bumpRevision();
+
+    // Return output similar to real git
+    if (remoteSha === null) {
+      return `To ${remoteConfig.url}\n * [new branch]      ${branch} -> ${branch}`;
+    }
+    return `To ${remoteConfig.url}\n   ${remoteSha.slice(0, 7)}..${localSha.slice(0, 7)}  ${branch} -> ${branch}`;
+
   } catch (err: unknown) {
-    return `fatal: ${(err as Error).message}`;
+    return `error: failed to push some refs to '${remoteName}'\n${(err as Error).message}`;
   }
 }
 /*
