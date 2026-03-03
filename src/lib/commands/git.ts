@@ -17,9 +17,11 @@ export async function main(ctx: CommandContext): Promise<string> {
   const subcommands: Record<string, (ctx: CommandContext) => Promise<string>> = {
     "init": init,
     "remote": remote,
-    //"clone": clone,
+    "clone": clone,
     "add": add,
     "commit": commit,
+    "push": push,
+    "pull": pull,
     "status": async () => "Status: Not yet implemented",
   };
 
@@ -33,40 +35,30 @@ export async function main(ctx: CommandContext): Promise<string> {
  * Initializes a new Git repository. If a directory is specified, it will initialize there.
  * If the directory doesn't exist, it will be created first.
  * If no directory is specified, it initializes in the current working directory.
- * @param ctx - A context object from the dispatcher containing any arguments and flags
- * @returns - An empty string on success, or an error message if the directory cannot be created or initialized.
+ *
+ * After init, we override HEAD to point at refs/heads/main instead of the
+ * isomorphic-git default (master). This matches modern git behaviour and
+ * ensures `git push origin main` works out of the box.
  */
 export async function init(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
 
-  // No directory specified, initialize in current working directory
-  if (args.length === 0) {
-    await git.init({
-      fs,             // LightningFS instance
-      dir: getCwd()   // from Zustand store
-    });
-    return "Initialized empty Git repository in " + getCwd();
-  }
+  // Determine target directory
+  const dir = args.length === 0 ? getCwd() : resolvePath(args[0]);
 
-  // Directory specified, initialize there.
-  if (await exists(fs, args[0], "dir")) {
-    await git.init({
-      fs,
-      dir: resolvePath(args[0])
-    });
-    return "Initialized empty Git repository in " + resolvePath(args[0]);
-  }
-
-  // If it doesn't exist, create it first.
-  else {
+  // Create the directory if it doesn't exist
+  if (args.length > 0 && !(await exists(fs, dir, 'dir'))) {
     await mkdir({ args: [args[0]], flags: { p: true } });
-    await git.init({
-      fs,
-      dir: resolvePath(args[0])
-    });
-    return "Initialized empty Git repository in " + resolvePath(args[0]);
   }
-};
+
+  // Init the repo
+  await git.init({ fs, dir });
+
+  // Override HEAD to default to 'main' instead of 'master'
+  await fs.promises.writeFile(`${dir}/.git/HEAD`, 'ref: refs/heads/main\n');
+
+  return `Initialized empty Git repository in ${dir}/.git/`;
+}
 
 /**
  * Manage remote connections for the repository. This includes listing existing remotes, adding new ones, removing, and renaming them.
@@ -365,9 +357,19 @@ export async function push(ctx: CommandContext): Promise<string> {
     // Resolve the local branch SHA
     let localSha: string;
     try {
+      // First try the branch name the user specified (or 'main')
       localSha = await git.resolveRef({ fs, dir, ref: `refs/heads/${branch}` });
     } catch {
-      return `error: src refspec ${branch} does not match any\n` +
+      // If 'main' didn't work, check what branch HEAD actually points to
+      try {
+        const currentBranch = await git.currentBranch({ fs, dir });
+        if (currentBranch && currentBranch !== branch) {
+          return `error: src refspec '${branch}' does not match any\n` +
+                 `hint: Your current branch is '${currentBranch}'. Did you mean:\n` +
+                 `hint:   git push ${remoteName} ${currentBranch}`;
+        }
+      } catch { /* ignore */ }
+      return `error: src refspec '${branch}' does not match any\n` +
              `error: failed to push some refs to '${remoteConfig.url}'`;
     }
 
@@ -395,8 +397,10 @@ export async function push(ctx: CommandContext): Promise<string> {
     return `To ${remoteConfig.url}\n   ${remoteSha.slice(0, 7)}..${localSha.slice(0, 7)}  ${branch} -> ${branch}`;
 
   } catch (err: unknown) {
+    console.error('PUSH DEBUG:', err);
     return `error: failed to push some refs to '${remoteName}'\n${(err as Error).message}`;
   }
+
 }
 
 /**
