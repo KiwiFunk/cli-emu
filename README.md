@@ -80,3 +80,58 @@ From the user's perspective, `git remote -v` would show `origin` just like real 
   myrepo.git/               ← bare repo, the "GitHub server"
 
 ```
+
+## Testing
+
+AI Generated - not yet verified, proceed with caution. The general flow should work, but some commands may need tweaking based on the actual implementation.
+
+### Phase 1: Set up the "GitHub" side
+1. Open the browser panel (left side)
+2. Click to create a new repository — name it `my-project`
+3. This creates `/remote/my-project.git` as a bare repo
+
+### Phase 2: Local repo setup (terminal)
+```/dev/null/test.sh#L1-6
+mkdir my-project
+cd my-project
+git init
+touch README.md
+git add .
+git commit -m "initial commit"
+```
+
+### Phase 3: Connect to remote and push
+```/dev/null/test.sh#L1-3
+git remote add origin https://github.com/user/my-project.git
+git remote -v
+git push origin main
+```
+
+After `git push`, the browser panel should **auto-refresh** and show `README.md` in the file tree.
+
+### Phase 4: Verify push worked
+```/dev/null/test.sh#L1-2
+touch app.js
+git add .
+```
+Wait — `git add` should be **silent** on success here. If you see output like `added 1 file(s)`, the old version is still running. Then:
+```/dev/null/test.sh#L1-2
+git commit -m "add app.js"
+git push origin main
+```
+Browser panel should now show both `README.md` and `app.js`.
+
+### Phase 5: Test pull
+This is trickier to test right now since we can't easily modify the bare repo independently. But you can test the "already up to date" case:
+```/dev/null/test.sh#L1
+git pull origin main
+```
+Should return `Already up to date.`
+
+### Phase 6: Test clone (if wired into router)
+```/dev/null/test.sh#L1-3
+cd /home/user
+git clone https://github.com/user/my-project.git my-clone
+cd my-clone
+```
+Then `ls` should show the files from the remote.
