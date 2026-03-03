@@ -179,11 +179,45 @@ export async function remote(ctx: CommandContext): Promise<string> {
          `   or: git remote remove <name>`;
 }
 
-/*
 export async function clone(ctx: CommandContext): Promise<string> {
-  // git clone
+  const { args } = ctx;
+  const userUrl = args[0]; // e.g. https://github.com/student/repo.git
+
+  if (!userUrl) return "fatal: You must specify a repository to clone.";
+
+  // Determine target directory folder
+  const urlParts = userUrl.split('/');
+  const repoName = urlParts[urlParts.length - 1].replace('.git', '');
+  const targetDir = args[1] ? resolvePath(args[1]) : resolvePath(repoName);
+
+  const localRemotePath = urlToPath(userUrl);
+  if (!localRemotePath) return `fatal: invalid repository URL`;
+
+  try {
+    // If the remote doesn't exist in our filesystem, we can't clone it
+    if (!(await exists(fs, localRemotePath, "dir"))) {
+      return `fatal: repository '${userUrl}' not found`;
+    }
+
+    // Clone natively using the local lightning-fs path
+    await git.clone({
+      fs,
+      dir: targetDir,
+      url: localRemotePath, // Bypasses HTTP, uses local FS transport
+      singleBranch: true,
+      depth: 1 // Keeps the browser memory light for the teaching tool
+    });
+
+    // Update the remote URL to match the user's original input, so it looks right in `git remote -v` and works on push.
+    // By default, iso-git just saves `url = /remote/...` to the config.
+    await git.deleteRemote({ fs, dir: targetDir, remote: 'origin' });
+    await git.addRemote({ fs, dir: targetDir, remote: 'origin', url: userUrl });
+
+    return `Cloning into '${repoName}'... done.`;
+  } catch (err: unknown) {
+    return `fatal: ${(err as Error).message}`;
+  }
 }
-*/
 
 // git add <file>
 export async function add(ctx: CommandContext): Promise<string> {
