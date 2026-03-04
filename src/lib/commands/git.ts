@@ -15,14 +15,15 @@ export async function main(ctx: CommandContext): Promise<string> {
   const { subcmd } = ctx;
 
   const subcommands: Record<string, (ctx: CommandContext) => Promise<string>> = {
-    "init": init,
+    "init":   init,
     "remote": remote,
-    "clone": clone,
-    "add": add,
+    "clone":  clone,
+    "add":    add,
     "commit": commit,
-    "push": push,
-    "pull": pull,
-    "status": async () => "Status: Not yet implemented",
+    "push":   push,
+    "pull":   pull,
+    "status": status,
+    "log":    log,
   };
 
   const handler = subcommands[subcmd || ""];
@@ -482,5 +483,117 @@ export async function pull(ctx: CommandContext): Promise<string> {
 
   } catch (err: unknown) {
     return `error: ${(err as Error).message}`;
+  }
+}
+
+/**
+ * git status
+ *
+ * Shows the working tree status — staged, unstaged, and untracked files.
+ * Output mirrors the format of real `git status`.
+ */
+export async function status(): Promise<string> {
+  const dir = getCwd();
+
+  try {
+    const matrix = await git.statusMatrix({ fs, dir });
+
+    const staged:    string[] = [];
+    const unstaged:  string[] = [];
+    const untracked: string[] = [];
+
+    for (const [filepath, head, workdir, index] of matrix) {
+      if (head === 0 && workdir === 2 && index === 0) {
+        // New file, never tracked
+        untracked.push(filepath);
+      } else if (head === 0 && workdir === 2 && index === 2) {
+        // New file, staged
+        staged.push(`new file:   ${filepath}`);
+      } else if (head === 1 && workdir === 2 && index === 2) {
+        // Modified, staged
+        staged.push(`modified:   ${filepath}`);
+      } else if (head === 1 && workdir === 2 && index === 1) {
+        // Modified, not staged
+        unstaged.push(`modified:   ${filepath}`);
+      } else if (head === 1 && workdir === 0 && index === 0) {
+        // Deleted, staged
+        staged.push(`deleted:    ${filepath}`);
+      } else if (head === 1 && workdir === 0 && index === 1) {
+        // Deleted, not staged
+        unstaged.push(`deleted:    ${filepath}`);
+      }
+    }
+
+    const lines: string[] = [];
+
+    let branch = 'main';
+    try {
+      branch = (await git.currentBranch({ fs, dir })) ?? 'main';
+    } catch { /* use default */ }
+
+    lines.push(`On branch ${branch}`);
+
+    if (staged.length === 0 && unstaged.length === 0 && untracked.length === 0) {
+      lines.push('nothing to commit, working tree clean');
+      return lines.join('\r\n');
+    }
+
+    if (staged.length > 0) {
+      lines.push('', 'Changes to be committed:');
+      lines.push('  (use "git restore --staged <file>..." to unstage)');
+      for (const f of staged) lines.push(`\t\t${f}`);
+    }
+
+    if (unstaged.length > 0) {
+      lines.push('', 'Changes not staged for commit:');
+      lines.push('  (use "git add <file>..." to update what will be committed)');
+      for (const f of unstaged) lines.push(`\t\t${f}`);
+    }
+
+    if (untracked.length > 0) {
+      lines.push('', 'Untracked files:');
+      lines.push('  (use "git add <file>..." to include in what will be committed)');
+      for (const f of untracked) lines.push(`\t\t${f}`);
+    }
+
+    return lines.join('\r\n');
+  } catch {
+    return 'fatal: not a git repository (or any of the parent directories): .git';
+  }
+}
+
+/**
+ * git log
+ *
+ * Shows the commit history for the current branch.
+ * Output mirrors the format of real `git log`.
+ */
+export async function log(): Promise<string> {
+  const dir = getCwd();
+
+  try {
+    const commits = await git.log({ fs, dir });
+
+    if (commits.length === 0) {
+      return 'fatal: your current branch does not have any commits yet';
+    }
+
+    const lines: string[] = [];
+
+    for (const entry of commits) {
+      const { oid, commit: c } = entry;
+      const date = new Date(c.author.timestamp * 1000);
+
+      lines.push(`commit ${oid}`);
+      lines.push(`Author: ${c.author.name} <${c.author.email}>`);
+      lines.push(`Date:   ${date.toLocaleString()}`);
+      lines.push('');
+      lines.push(`    ${c.message}`);
+      lines.push('');
+    }
+
+    return lines.join('\r\n');
+  } catch {
+    return 'fatal: not a git repository (or any of the parent directories): .git';
   }
 }
