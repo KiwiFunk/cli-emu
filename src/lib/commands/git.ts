@@ -307,30 +307,49 @@ export async function add(ctx: CommandContext): Promise<string> {
 }
 
 
-// git commit -m "message"
+/**
+ * git commit -m "message"
+ * Records staged changes as a new commit.
+ */
 export async function commit(ctx: CommandContext): Promise<string> {
   const { flags, args } = ctx;
+  const dir = getCwd();
 
-  if (flags.length == '0') return "";
+  // Check for -m flag
+  if (!flags['m']) {
+    return `error: switch 'm' requires a value\nusage: git commit -m <message>`;
+  }
 
+  // Message is the first positional arg (parser strips quotes)
   const message = args[0];
-
-  if (!message) return "error: switch `m' requires a value";
+  if (!message) {
+    return `error: switch 'm' requires a value`;
+  }
 
   try {
+    // Get the actual branch name for the output message
+    let branch = 'main';
+    try {
+      branch = (await git.currentBranch({ fs, dir })) ?? 'main';
+    } catch { /* use default */ }
+
     const sha = await git.commit({
       fs,
-      dir: getCwd(),
+      dir,
       message,
       author: {
         name: "Student Learner",
         email: "student@example.local",
       },
     });
-    // Return a message similar to the default git commit output, showing the first 7 characters of the commit SHA and the commit message
-    return `[main ${sha.substring(0, 7)}] ${message}`;
-  } catch {
-    return `nothing to commit, working tree clean`;
+
+    return `[${branch} ${sha.substring(0, 7)}] ${message}`;
+  } catch (err: unknown) {
+    const msg = (err as Error).message ?? '';
+    if (msg.includes('nothing to commit') || msg.includes('no changes')) {
+      return 'nothing to commit, working tree clean';
+    }
+    return `error: ${msg}`;
   }
 }
 
