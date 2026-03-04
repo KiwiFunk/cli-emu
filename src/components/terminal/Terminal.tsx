@@ -1,4 +1,5 @@
 import { Terminal as XTerm } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
 import { FitAddon } from '@xterm/addon-fit';
 import { useEffect, useRef } from 'react';
 import { dispatchCommand } from '../../lib/commands/index.ts';
@@ -48,7 +49,7 @@ function Terminal() {
   }, []);
 
   return (
-    <div ref={terminalRef} className="w-full h-full" />
+    <div ref={terminalRef} />
   );
 }
 
