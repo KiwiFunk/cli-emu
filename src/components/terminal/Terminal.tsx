@@ -49,7 +49,9 @@ function Terminal() {
   }, []);
 
   return (
-    <div ref={terminalRef} />
+    <div className="h-full bg-black text-white font-mono text-sm rounded-md overflow-hidden">
+      <div ref={terminalRef} className='h-full p-4' />
+    </div>
   );
 }
 

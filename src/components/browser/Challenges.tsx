@@ -16,7 +16,7 @@ export default function Challenges() {
   }, [gitRevision, runChecks]);
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-4xl">
       <h1 className="text-2xl font-bold mb-2">Welcome to GitSim!</h1>
       <p className="text-sm text-slate-600 mb-6">
         This tool is designed to get you familiar with basic shell commands and

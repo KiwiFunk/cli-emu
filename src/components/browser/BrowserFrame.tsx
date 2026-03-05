@@ -59,7 +59,7 @@ function BrowserFrame({ children }: {children: React.ReactNode}) {
   }, []);
 
   return (
-    <div className="w-full max-w-4xl mx-auto overflow-hidden rounded-xl border border-slate-700 shadow-2xl bg-slate-900 h-full flex flex-col">
+    <div className="w-full mx-auto overflow-hidden rounded-xl border border-slate-700 shadow-2xl bg-slate-900 h-full flex flex-col">
       {/* Top Bar */}
       <div className="flex items-center justify-between px-4 pt-3 bg-slate-800 select-none">
         <div className="flex items-center gap-1 overflow-x-auto">

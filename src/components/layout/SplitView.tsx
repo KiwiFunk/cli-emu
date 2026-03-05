@@ -7,7 +7,7 @@ import Challenges from '../browser/Challenges';
 import PageRouter from '../browser/GitHub/PageRouter';
 import Glossary from '../browser/Glossary';
 
-const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
+const panelStyles = "bg-slate-800 rounded-md shadow-md overflow-hidden";
 
 interface SplitViewProps {
   className?: string;
@@ -35,7 +35,7 @@ function SplitView({ className }: SplitViewProps) {
           w-2
           outline-none
           rounded-sm
-          mx-1.5
+          mx-1
           bg-slate-600
           data-[separator='hover']:bg-slate-500
           data-[separator='active']:bg-slate-400
