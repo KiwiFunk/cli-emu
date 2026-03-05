@@ -81,6 +81,89 @@ From the user's perspective, `git remote -v` would show `origin` just like real 
 
 ```
 
+## BrowserFrame & Tab System
+
+`BrowserFrame` is a standalone, self-contained browser chrome component. It takes any number of children, deconstructs them, and generates a tab for each one — no configuration objects, no external state, no special interfaces required on child components.
+
+### Basic Usage
+
+Wrap any components in `<BrowserTab>` and pass them as children to `<BrowserFrame>`:
+
+```/dev/null/example.tsx#L1-7
+<BrowserFrame>
+  <BrowserTab tabTitle="GitHub">
+    <PageRouter />
+  </BrowserTab>
+  <BrowserTab tabTitle="Documentation">
+    <DocsPage />
+  </BrowserTab>
+</BrowserFrame>
+```
+
+Each `<BrowserTab>` becomes a clickable tab in the browser's tab strip. Only the active tab's content is rendered in the content area.
+
+### How It Works
+
+```/dev/null/flow.txt#L1-12
+<BrowserFrame>
+  <BrowserTab tabTitle="GitHub">     ──→  Tab 1: "GitHub"      (active)
+    <PageRouter />
+  </BrowserTab>
+  <BrowserTab tabTitle="Docs">       ──→  Tab 2: "Docs"
+    <DocsPage />
+  </BrowserTab>
+</BrowserFrame>
+        ↓
+React.Children.toArray(children)     ──→  [BrowserTab, BrowserTab]
+        ↓
+childArray[activeIndex]              ──→  renders only the selected tab's content
+```
+
+1. `BrowserFrame` calls `React.Children.toArray()` to flatten its children into an indexable array
+2. For each child, `getTabTitle()` reads the `tabTitle` prop to determine the tab label
+3. An `activeIndex` state tracks which tab is selected
+4. Only `childArray[activeIndex]` is rendered into the content area — inactive tabs don't mount
+
+### Tab Title Resolution
+
+`getTabTitle()` uses a priority chain to determine what label appears on each tab:
+
+| Priority | Source | Example |
+|----------|--------|---------|
+| 1st | `tabTitle` prop on the child | `<BrowserTab tabTitle="GitHub">` → `"GitHub"` |
+| 2nd | Component's `displayName` or `name` | `<PageRouter />` → `"PageRouter"` |
+| 3rd | Generic fallback | `"Tab 1"`, `"Tab 2"`, etc. |
+
+This means `<BrowserTab>` is optional — bare components still work, they just get auto-named:
+
+```/dev/null/example.tsx#L1-5
+<BrowserFrame>
+  <PageRouter />
+  <Settings />
+</BrowserFrame>
+```
+
+This produces tabs labelled "PageRouter" and "Settings" automatically.
+
+### The `<BrowserTab>` Wrapper
+
+`BrowserTab` is a transparent wrapper component exported alongside `BrowserFrame`. It exists purely to carry the `tabTitle` prop in a type-safe way — at runtime, it just renders its children:
+
+```/dev/null/example.tsx#L1-3
+export function BrowserTab({ children }: BrowserTabProps) {
+  return <>{children}</>;
+}
+```
+
+This solves a TypeScript problem: you can't pass `tabTitle` directly to a component like `<PageRouter tabTitle="GitHub" />` because `PageRouter` doesn't accept that prop. The wrapper gives TypeScript a proper type to validate against, without requiring child components to change their interfaces at all.
+
+### Design Principles
+
+- **Standalone** — `BrowserFrame` ships everything it needs. No external state, no configuration objects, no provider wrappers.
+- **Zero impact on children** — Child components don't need to know they're inside a browser frame. They don't accept special props or implement any interface.
+- **Graceful degradation** — One child? You get one tab. Five children? Five tabs. No wrapper? Tab name is inferred. Everything just works.
+
+
 ## Testing
 
 AI Generated - not yet verified, proceed with caution. The general flow should work, but some commands may need tweaking based on the actual implementation.

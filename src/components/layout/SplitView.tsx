@@ -2,6 +2,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import Terminal from '../terminal/Terminal';
 import BrowserFrame from '../browser/BrowserFrame';
+import { BrowserTab } from '../browser/BrowserFrame';
 import PageRouter from '../browser/GitHub/PageRouter';
 
 const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
@@ -10,10 +11,6 @@ interface SplitViewProps {
   className?: string;
 }
 
-/**
- * For now we accept child props for the sake of testing, but eventually this component will be responsible for rendering the browser and terminal windows itself.
- * @returns -
- */
 function SplitView({ className }: SplitViewProps) {
 
   return (
@@ -23,7 +20,9 @@ function SplitView({ className }: SplitViewProps) {
         <Panel minSize="40%" className={`${panelStyles}`}>
           {/* Browser Window Goes Here */}
           <BrowserFrame>
-            <PageRouter />
+            <BrowserTab tabTitle="GitHub">
+              <PageRouter />
+            </BrowserTab>
           </BrowserFrame>
         </Panel>
 
