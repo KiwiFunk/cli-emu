@@ -18,6 +18,9 @@ export async function createRepo(name: string, addReadme: boolean = false): Prom
     console.log("This will be implemented later!");
   }
 
+  // Override HEAD to default to 'main' instead of 'master'
+  await fs.promises.writeFile(`${dir}/HEAD`, 'ref: refs/heads/main\n');
+
   // Update the store
   useRepoStore.getState().setRepoDir(dir);
   useAppStore.getState().bumpRevision();
