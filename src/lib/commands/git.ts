@@ -275,6 +275,11 @@ export async function add(ctx: CommandContext): Promise<string> {
 
   if (args.length == 0) return "git add: missing file operand. Use 'git add <file>' to specify a file, or 'git add .' to stage all files in the current directory.";
 
+  // Check we're inside a git repo
+  if (!(await exists(fs, `${dir}/.git`, 'dir'))) {
+    return 'fatal: not a git repository (or any of the parent directories): .git';
+  }
+
   try {
     // Isomorphic-Git can't handle '.' by default, so walk directory and add each file individually
     if (args[0] === ".") {
