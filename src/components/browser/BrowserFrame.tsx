@@ -55,6 +55,7 @@ function BrowserFrame({ children }: {children: React.ReactNode}) {
 
   const selectTab = useCallback((index: number) => {
     setActiveIndex(index);
+    useAppStore.getState().setBrowserUrl(`http://localhost:3000/${index + 1}`);
   }, []);
 
   return (

@@ -1,49 +1,116 @@
+import { useEffect } from 'react';
+import { challenges } from '../../lib/challenges';
+import { useChallengeStore } from '../../store/useChallengeStore';
+import { useAppStore } from '../../store/useAppStore';
+import { CheckCircle2, Circle, ChevronRight, Lightbulb } from 'lucide-react';
+
 export default function Challenges() {
+  const results = useChallengeStore(state => state.results);
+  const runChecks = useChallengeStore(state => state.runChecks);
+  const gitRevision = useAppStore(state => state.gitRevision);
+
+  // Re-run checks on mount and whenever gitRevision changes
+  // (gitRevision bumps after push/createRepo, covering browser-side actions)
+  useEffect(() => {
+    runChecks();
+  }, [gitRevision, runChecks]);
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to GitSim!</h1>
-      <p className="text-sm text-slate-700">
-        This tool is designed to get you familliar with using basic shell commands, and learning how to safely work within a Git based repository.
-        The terminal on the right is your playground, and the browser on the left is your guide.
-        You can click around in the browser to learn about different concepts, and then try them out in the terminal.
-        Don't worry about breaking anything - you can always reset the terminal to start fresh. Happy coding!
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-2">Welcome to GitSim!</h1>
+      <p className="text-sm text-slate-600 mb-6">
+        This tool is designed to get you familiar with basic shell commands and
+        learning how to safely work within a Git-based repository. Complete the
+        challenges below using the terminal on the right. Your progress is
+        tracked automatically!
       </p>
 
-      <br />
+      <div className="grid gap-5">
+        {challenges.map((challenge) => {
+          const stepResults = results[challenge.id] ?? [];
+          const completedCount = stepResults.filter(Boolean).length;
+          const totalSteps = challenge.steps.length;
+          const isComplete = completedCount === totalSteps;
 
-      <h2 className="text-xl font-semibold mb-2">Getting Started</h2>
-      <p className="text-sm text-slate-700">
-        If you're new to the command line, we recommend starting with the Glossary tab to familiarize yourself with common commands and concepts.
-        Once you're comfortable, you can move on to the Challenges where you'll find a series of exercises designed to test your knowledge and help you practice your skills.
-        Each challenge will have a description of the task you need to accomplish, and you can use the terminal to execute the necessary commands.
-        Don't worry if you get stuck - you can always refer back to the Glossary or reset the terminal to try again. Good luck!
-      </p>
-
-      <h2 className="text-xl font-semibold mb-2 mt-6">Challenges</h2>
-
-      {/* Challenge Cards */}
-      <div className="grid gap-4">
-        <div className="bg-slate-100 p-4 rounded-md border border-slate-300">
-          <h3 className="text-lg font-semibold mb-2">Challenge 1: Basic Navigation</h3>
-          <p className="text-sm text-slate-700">
-            Use the <code className="bg-slate-200 px-1 rounded">ls</code> and <code className="bg-slate-200 px-1 rounded">cd</code> commands to navigate through the directory structure and list the contents of each directory.
-          </p>
-        </div>
-
-        <div className="bg-slate-100 p-4 rounded-md border border-slate-300">
-          <h3 className="text-lg font-semibold mb-2">Challenge 2: Git Basics</h3>
-          <p className="text-sm text-slate-700">
-            Initialize a new Git repository, create a new file, stage it, and commit your changes. Then, create a new branch and switch to it.
-          </p>
-        </div>
-
-        <div className="bg-slate-100 p-4 rounded-md border border-slate-300">
-          <h3 className="text-lg font-semibold mb-2">Challenge 3: Remote Repositories</h3>
-          <p className="text-sm text-slate-700">
-            Add a remote repository, push your local commits to the remote, and then pull any changes from the remote back to your local repository.
-          </p>
-        </div>
+          return (
+            <ChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              stepResults={stepResults}
+              completedCount={completedCount}
+              totalSteps={totalSteps}
+              isComplete={isComplete}
+            />
+          );
+        })}
       </div>
+    </div>
+  );
+}
+
+interface ChallengeCardProps {
+  challenge: typeof challenges[number];
+  stepResults: boolean[];
+  completedCount: number;
+  totalSteps: number;
+  isComplete: boolean;
+}
+
+function ChallengeCard({ challenge, stepResults, completedCount, totalSteps, isComplete }: ChallengeCardProps) {
+  return (
+    <div className={`
+      p-4 rounded-lg border transition-colors
+      ${isComplete
+        ? 'bg-emerald-50 border-emerald-300'
+        : 'bg-slate-50 border-slate-200'}
+    `}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          {isComplete
+            ? <CheckCircle2 size={20} className="text-emerald-500" />
+            : <ChevronRight size={20} className="text-slate-400" />
+          }
+          {challenge.title}
+        </h3>
+        <span className={`text-xs font-mono px-2 py-1 rounded-full ${
+          isComplete ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600'
+        }`}>
+          {completedCount}/{totalSteps}
+        </span>
+      </div>
+
+      {/* Description */}
+      <p className="text-sm text-slate-600 mb-3 ml-7">{challenge.description}</p>
+
+      {/* Steps */}
+      <div className="space-y-1.5 ml-7">
+        {challenge.steps.map((step, i) => (
+          <div key={i} className="flex items-center gap-2 text-sm">
+            {stepResults[i]
+              ? <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+              : <Circle size={16} className="text-slate-300 shrink-0" />
+            }
+            <span className={stepResults[i] ? 'text-slate-500 line-through' : 'text-slate-700'}>
+              {step.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {!isComplete && challenge.hints.length > 0 && (
+        <div className="mt-3 ml-7 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+          <div className="flex items-center gap-1 font-semibold mb-1">
+            <Lightbulb size={12} />
+            Hints
+          </div>
+          <ul className="list-disc list-inside space-y-0.5">
+            {challenge.hints.map((hint, i) => (
+              <li key={i}>{hint}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
