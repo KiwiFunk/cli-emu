@@ -321,6 +321,11 @@ export async function commit(ctx: CommandContext): Promise<string> {
   const { flags, args } = ctx;
   const dir = getCwd();
 
+  // Check we're inside a git repo
+  if (!(await exists(fs, `${dir}/.git`, 'dir'))) {
+    return 'fatal: not a git repository (or any of the parent directories): .git';
+  }
+
   // Check for -m flag
   if (!flags['m']) {
     return `error: switch 'm' requires a value\nusage: git commit -m <message>`;
