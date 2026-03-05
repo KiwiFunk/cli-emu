@@ -26,6 +26,13 @@ export default function Challenges() {
       </p>
 
       <div className="grid gap-5">
+
+        <div className="px-4 py-2 bg-red-200 rounded-lg shadow-md">
+          <p className="font-semibold">
+            DEBUGGING: Run the command <code className="bg-red-100 px-1 rounded">clearFs</code> to reset the file system and remote repo.
+          </p>
+        </div>
+
         {challenges.map((challenge) => {
           const stepResults = results[challenge.id] ?? [];
           const completedCount = stepResults.filter(Boolean).length;
