@@ -22,11 +22,15 @@ function SplitView({ className }: SplitViewProps) {
         <Panel minSize="40%" className={`${panelStyles}`}>
           {/* Browser Window Goes Here */}
           <BrowserFrame>
-            <Challenges />
+            <BrowserTab tabTitle="Intro | Challenges">
+              <Challenges />
+            </BrowserTab>
             <BrowserTab tabTitle="GitHub">
               <PageRouter />
             </BrowserTab>
-            <Glossary />
+            <BrowserTab tabTitle="Glossary">
+              <Glossary />
+            </BrowserTab>
           </BrowserFrame>
         </Panel>
 

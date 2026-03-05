@@ -20,6 +20,9 @@ function getTabTitle(child: React.ReactElement, index: number): string {
     return props.tabTitle;
   }
 
+  // Minification causes issues with relying on function names, so we prioritize explicit titles.
+  // Consider removing or refactoring these fallbacks
+
   // If no explicit title, try to infer from the type
   const type = child.type;
 
