@@ -3,7 +3,9 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 import Terminal from '../terminal/Terminal';
 import BrowserFrame from '../browser/BrowserFrame';
 import { BrowserTab } from '../browser/BrowserFrame';
+import Challenges from '../browser/Challenges';
 import PageRouter from '../browser/GitHub/PageRouter';
+import Glossary from '../browser/Glossary';
 
 const panelStyles = "bg-slate-700 p-4 rounded-md shadow-md";
 
@@ -20,9 +22,11 @@ function SplitView({ className }: SplitViewProps) {
         <Panel minSize="40%" className={`${panelStyles}`}>
           {/* Browser Window Goes Here */}
           <BrowserFrame>
+            <Challenges />
             <BrowserTab tabTitle="GitHub">
               <PageRouter />
             </BrowserTab>
+            <Glossary />
           </BrowserFrame>
         </Panel>
 
