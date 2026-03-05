@@ -245,7 +245,7 @@ export async function clone(ctx: CommandContext): Promise<string> {
     // Resolve the remote's HEAD branch
     let remoteSha: string;
     try {
-      remoteSha = await git.resolveRef({ fs, dir: bareDir, ref: 'refs/heads/main' });
+      remoteSha = await git.resolveRef({ fs, gitdir: bareDir, ref: 'refs/heads/main' });
     } catch {
       // Empty repo — nothing to clone
       return `Cloning into '${repoName}'...\nwarning: remote HEAD refers to nonexistent ref, unable to checkout.`;
