@@ -14,7 +14,9 @@ export async function createRepo(name: string, addReadme: boolean = false): Prom
   await git.init({ fs, dir, bare: true });            // Init as bare repo
 
   // If README requested, write it directly into the bare repo
-  // Add later
+  if (addReadme) {
+    console.log("This will be implemented later!");
+  }
 
   // Update the store
   useRepoStore.getState().setRepoDir(dir);
