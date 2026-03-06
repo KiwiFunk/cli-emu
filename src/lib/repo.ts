@@ -8,23 +8,34 @@ import { useAppStore } from '../store/useAppStore';
 export async function createRepo(name: string, addReadme: boolean = false): Promise<void> {
   const dir = `/remote/${name}.git`;
 
-  // Create the directory and initialise as a bare repo
-  await fs.promises.mkdir('/remote').catch(() => {}); // Ensure /remote exists
-  await fs.promises.mkdir(dir);
-  await git.init({ fs, dir, bare: true });            // Init as bare repo
+  try {
+    // Create the directory and initialise as a bare repo
+    await fs.promises.mkdir('/remote').catch(() => {}); // Ensure /remote exists
+    await fs.promises.mkdir(dir);
+    await git.init({ fs, dir, bare: true });            // Init as bare repo
 
-  // If README requested, write it directly into the bare repo
-  if (addReadme) {
-    console.log("This will be implemented later!");
+    // If README requested, write it directly into the bare repo
+    if (addReadme) {
+      console.log("This will be implemented later!");
+    }
+
+    // Override HEAD to default to 'main' instead of 'master'
+    await fs.promises.writeFile(`${dir}/HEAD`, 'ref: refs/heads/main\n');
+
+    // Update the store
+    useRepoStore.getState().setRepoDir(dir);
+    useAppStore.getState().bumpRevision();
+
+  } catch (err: unknown) {
+    const error = err as { code?: string; message?: string };
+    if (error.code === 'EEXIST') {
+      throw new Error(`Repository '${name}' already exists`);
+    }
+    throw err;
   }
 
-  // Override HEAD to default to 'main' instead of 'master'
-  await fs.promises.writeFile(`${dir}/HEAD`, 'ref: refs/heads/main\n');
-
-  // Update the store
-  useRepoStore.getState().setRepoDir(dir);
-  useAppStore.getState().bumpRevision();
 }
+
 
 export async function hasRemoteRepo(): Promise<boolean> {
   try {
