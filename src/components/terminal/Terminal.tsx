@@ -23,7 +23,7 @@ function Terminal() {
     fitAddon.fit();                                               // Fit terminal to container size
     terminal.write(`Welcome to GitSim!\r\n${primaryPrompt}/home/user$ `);
 
-    // xterm handles its own state, a persistant input buffer is fine
+    // xterm handles its own state, a persistent input buffer is fine
     let inputBuffer = "";
 
     // xterm has its own event system for handling user input
