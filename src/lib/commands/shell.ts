@@ -130,7 +130,7 @@ export async function mkdir(ctx: CommandContext): Promise<string> {
     }
   }));
 
-  return results.filter(Boolean).join('\n');
+  return results.filter(Boolean).join('\r\n');
 }
 
 /**
