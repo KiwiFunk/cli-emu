@@ -5,8 +5,34 @@ import fs from './fileSystem';
 import { useRepoStore } from '../store/useRepoStore';
 import { useAppStore } from '../store/useAppStore';
 
+type ValidationResult =
+  | { valid: true; sanitized: string }
+  | { valid: false; error: string };
+
+export async function validateRepoName(raw: string): Promise<ValidationResult> {
+  let name = raw.trim();
+  name = name.replace(/\s+/g, '-');                 // spaces → hyphens
+  name = name.replace(/[^a-zA-Z0-9._-]/g, '');      // strip invalid characters
+  name = name.replace(/\.{2,}/g, '.');              // collapse consecutive dots
+  name = name.replace(/-{2,}/g, '-');               // collapse consecutive hyphens
+  name = name.replace(/^[.\-]+|[.\-]+$/g, '');      // strip leading/trailing dots & hyphens
+
+  if (name.length === 0) return { valid: false, error: 'Repository name cannot be empty.' };
+  if (name.length > 100) return { valid: false, error: 'Repository name cannot exceed 100 characters.' };
+  if (name === '.' || name === '..') return { valid: false, error: 'Repository name cannot be "." or "..".' };
+
+  return { valid: true, sanitized: name };
+}
+
 export async function createRepo(name: string, addReadme: boolean = false): Promise<void> {
-  const dir = `/remote/${name}.git`;
+  // Validate and sanitzie name parameter
+  const result = await validateRepoName(name);
+  if (!result.valid) {
+    throw new Error(result.error);
+  }
+
+  const sanitized = result.sanitized;
+  const dir = `/remote/${sanitized}.git`;
 
   try {
     // Create the directory and initialise as a bare repo
