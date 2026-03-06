@@ -50,7 +50,10 @@ function PageRouter() {
           case 'CREATE_FORM':
             return <CreateRepoForm onSubmit={handleCreateRepo} />;
           case 'REPO_INDEX':
-            return <RepoIndex onSelectRepo={handleSelectRepo} />;
+            return <RepoIndex
+              onSelectRepo={handleSelectRepo}
+              onNewRepo={() => navigate('CREATE_FORM', `${BASE_URL}/new`)}
+            />;
           case 'REPO_VIEW':
             return <GithubRepo />;
           default:
