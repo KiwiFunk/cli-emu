@@ -4,6 +4,60 @@ import git from 'isomorphic-git';
 import fs from './fileSystem';
 import { useRepoStore } from '../store/useRepoStore';
 import { useAppStore } from '../store/useAppStore';
+import type { TreeEntry } from 'isomorphic-git';
+
+async function seedReadme(gitdir: string, repoName: string): Promise<void> {
+  const content = `# ${repoName}\n`;
+  const encoder = new TextEncoder();
+
+  // Write blob (raw file content)
+  const blobOid = await git.writeBlob({
+    fs,
+    gitdir,
+    blob: encoder.encode(content),
+  });
+
+  // Write a tree containing the blob as "README.md"
+  const treeOid = await git.writeTree({
+    fs,
+    gitdir,
+    tree: [
+      { mode: '100644', path: 'README.md', oid: blobOid, type: 'blob' } as TreeEntry,
+    ],
+  });
+
+  // Write the initial commit
+  const commitOid = await git.writeCommit({
+    fs,
+    gitdir,
+    commit: {
+      message: 'Initial commit',
+      tree: treeOid,
+      parent: [],
+      author: {
+        name: 'GitHub',
+        email: 'noreply@github.com',
+        timestamp: Math.floor(Date.now() / 1000),
+        timezoneOffset: 0,
+      },
+      committer: {
+        name: 'GitHub',
+        email: 'noreply@github.com',
+        timestamp: Math.floor(Date.now() / 1000),
+        timezoneOffset: 0,
+      },
+    },
+  });
+
+  // Point main at the new commit
+  await git.writeRef({
+    fs,
+    gitdir,
+    ref: 'refs/heads/main',
+    value: commitOid,
+    force: true,
+  });
+}
 
 type ValidationResult =
   | { valid: true; sanitized: string }
@@ -42,7 +96,7 @@ export async function createRepo(name: string, addReadme: boolean = false): Prom
 
     // If README requested, write it directly into the bare repo
     if (addReadme) {
-      console.log("This will be implemented later!");
+      await seedReadme(dir, sanitized);
     }
 
     // Override HEAD to default to 'main' instead of 'master'
