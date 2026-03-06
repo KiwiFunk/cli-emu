@@ -79,7 +79,6 @@ export async function validateRepoName(raw: string): Promise<ValidationResult> {
 }
 
 export async function createRepo(name: string, addReadme: boolean = false): Promise<void> {
-  // Validate and sanitzie name parameter
   const result = await validateRepoName(name);
   if (!result.valid) {
     throw new Error(result.error);
@@ -88,32 +87,35 @@ export async function createRepo(name: string, addReadme: boolean = false): Prom
   const sanitized = result.sanitized;
   const dir = `/remote/${sanitized}.git`;
 
+  // Ensure /remote exists
+  await fs.promises.mkdir('/remote').catch(() => {});
+
+  // Create the directory — if it somehow already exists, give a clear error
   try {
-    // Create the directory and initialise as a bare repo
-    await fs.promises.mkdir('/remote').catch(() => {}); // Ensure /remote exists
     await fs.promises.mkdir(dir);
-    await git.init({ fs, dir, bare: true });            // Init as bare repo
-
-    // If README requested, write it directly into the bare repo
-    if (addReadme) {
-      await seedReadme(dir, sanitized);
-    }
-
-    // Override HEAD to default to 'main' instead of 'master'
-    await fs.promises.writeFile(`${dir}/HEAD`, 'ref: refs/heads/main\n');
-
-    // Update the store
-    useRepoStore.getState().setRepoDir(dir);
-    useAppStore.getState().bumpRevision();
-
   } catch (err: unknown) {
-    const error = err as { code?: string; message?: string };
-    if (error.code === 'EEXIST') {
-      throw new Error(`Repository '${name}' already exists`);
+    if (err instanceof Error && err.message.includes('EEXIST')) {
+      throw new Error(`Repository '${sanitized}' already exists.`);
     }
-    throw err;
+    throw new Error(`Failed to create repository directory: ${err instanceof Error ? err.message : String(err)}`);
   }
+
+  // Initialise as a bare repo
+  await git.init({ fs, dir, bare: true });
+
+  // Override HEAD to default to 'main' instead of 'master'
+  await fs.promises.writeFile(`${dir}/HEAD`, 'ref: refs/heads/main\n');
+
+  // Seed with README if requested
+  if (addReadme) {
+    await seedReadme(dir, sanitized);
+  }
+
+  // Update the store
+  useRepoStore.getState().setRepoDir(dir);
+  useAppStore.getState().bumpRevision();
 }
+
 
 
 export async function hasRemoteRepo(): Promise<boolean> {
