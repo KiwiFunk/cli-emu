@@ -71,7 +71,7 @@ export async function init(ctx: CommandContext): Promise<string> {
  *  git remote remove <name>                remove a remote
  *  git remote rename <old> <new>           rename a remote
  *
- *  Remote add dpes NOT check if it is valid - neither does real git. Check happens on Push
+ *  Remote add does NOT check if it is valid - neither does real git. Check happens on Push
  */
 export async function remote(ctx: CommandContext): Promise<string> {
   const { args, flags } = ctx;
