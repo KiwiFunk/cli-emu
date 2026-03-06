@@ -55,7 +55,7 @@ function PageRouter() {
               onNewRepo={() => navigate('CREATE_FORM', `${BASE_URL}/new`)}
             />;
           case 'REPO_VIEW':
-            return <GithubRepo />;
+            return <GithubRepo onNavigateToIndex={() => navigate('REPO_INDEX', `${BASE_URL}/${USERNAME}`)} />;
           default:
             return null;
         }

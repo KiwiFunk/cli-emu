@@ -29,7 +29,11 @@ interface RepoActionButtonProps {
   count: string | number;
 }
 
-const GithubRepo = () => {
+interface RepoViewProps {
+  onNavigateToIndex?: () => void;
+}
+
+const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
 
   // Subscribe to Zustand stores — component re-renders when these change
   const repoDir = useRepoStore(state => state.repoDir);
@@ -62,7 +66,7 @@ const GithubRepo = () => {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-2 text-xl">
           <Book size={18} className="text-[#8b949e]" />
-          <span className="text-[#58a6ff] hover:underline cursor-pointer">username</span>
+          <span className="text-[#58a6ff] hover:underline cursor-pointer" onClick={onNavigateToIndex}>user</span>
           <span className="text-[#8b949e]">/</span>
           <span
             className="font-semibold text-[#58a6ff] hover:underline cursor-pointer"
