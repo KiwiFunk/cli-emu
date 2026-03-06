@@ -4,6 +4,7 @@ import git from 'isomorphic-git';
 import fs from './fileSystem';
 import { useRepoStore } from '../store/useRepoStore';
 import { useAppStore } from '../store/useAppStore';
+import { isFsError } from './commands/helpers';
 import type { TreeEntry } from 'isomorphic-git';
 
 async function seedReadme(gitdir: string, repoName: string): Promise<void> {
@@ -94,7 +95,7 @@ export async function createRepo(name: string, addReadme: boolean = false): Prom
   try {
     await fs.promises.mkdir(dir);
   } catch (err: unknown) {
-    if (err instanceof Error && err.message.includes('EEXIST')) {
+    if (isFsError(err) && err.code === 'EEXIST') {
       throw new Error(`Repository '${sanitized}' already exists.`);
     }
     throw new Error(`Failed to create repository directory: ${err instanceof Error ? err.message : String(err)}`);
