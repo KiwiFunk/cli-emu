@@ -69,7 +69,7 @@ export async function validateRepoName(raw: string): Promise<ValidationResult> {
   name = name.replace(/[^a-zA-Z0-9._-]/g, '');      // strip invalid characters
   name = name.replace(/\.{2,}/g, '.');              // collapse consecutive dots
   name = name.replace(/-{2,}/g, '-');               // collapse consecutive hyphens
-  name = name.replace(/^[.\-]+|[.\-]+$/g, '');      // strip leading/trailing dots & hyphens
+  name = name.replace(/^[.-]+|[.-]+$/g, '');        // strip leading/trailing dots & hyphens
 
   if (name.length === 0) return { valid: false, error: 'Repository name cannot be empty.' };
   if (name.length > 100) return { valid: false, error: 'Repository name cannot exceed 100 characters.' };
@@ -151,7 +151,6 @@ export async function getCommits(repoDir: string) {
     return [];
   }
 }
-
 
 /**
  * Get the file tree for a given ref and optional subfolder path.
