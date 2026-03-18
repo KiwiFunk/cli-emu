@@ -56,10 +56,16 @@ function BrowserFrame({ children }: {children: React.ReactNode}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const safeIndex = Math.min(activeIndex, childArray.length - 1);
 
+  // useCallback will return a memoized version of the callback that only changes if one of the inputs has changed
   const selectTab = useCallback((index: number) => {
     setActiveIndex(index);
     useAppStore.getState().setBrowserUrl(`http://localhost:3000/${index + 1}`);
   }, []);
+
+  const handleTabClick = useCallback((index: number) => () => {
+      selectTab(index);
+    }, [selectTab]);
+
 
   return (
     <div className="w-full mx-auto overflow-hidden rounded-xl border border-slate-700 shadow-2xl bg-slate-900 h-full flex flex-col">
@@ -73,7 +79,7 @@ function BrowserFrame({ children }: {children: React.ReactNode}) {
             return (
               <div
                 key={index}
-                onClick={() => selectTab(index)}
+                onClick={handleTabClick(index)}
                 className={`
                   group flex items-center gap-2 px-4 py-2 text-xs rounded-t-lg cursor-pointer transition-colors shrink-0
                   ${isActive
