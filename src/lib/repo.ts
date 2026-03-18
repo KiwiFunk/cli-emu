@@ -79,7 +79,7 @@ export async function validateRepoName(raw: string): Promise<ValidationResult> {
   return { valid: true, sanitized: name };
 }
 
-export async function createRepo(name: string, addReadme: boolean = false): Promise<void> {
+export async function createRepo(name: string, addReadme: boolean = false): Promise<string> {
   const result = await validateRepoName(name);
   if (!result.valid) {
     throw new Error(result.error);
@@ -115,6 +115,9 @@ export async function createRepo(name: string, addReadme: boolean = false): Prom
   // Update the store
   useRepoStore.getState().setRepoDir(dir);
   useAppStore.getState().bumpRevision();
+
+  // Return the sanitized repo name for navigation purposes
+  return sanitized;
 }
 
 

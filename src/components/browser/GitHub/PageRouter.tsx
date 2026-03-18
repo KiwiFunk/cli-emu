@@ -31,8 +31,9 @@ function PageRouter() {
   }, []);
 
   const handleCreateRepo = async (name: string, addReadme: boolean) => {
-    await createRepo(name, addReadme);
-    navigate('REPO_VIEW', `${BASE_URL}/${USERNAME}/${name}`);
+    // We need to use the returned name, as it may be sanitized/modified from the original input
+    const repoName = await createRepo(name, addReadme);
+    navigate('REPO_VIEW', `${BASE_URL}/${USERNAME}/${repoName}`);
   };
 
   const handleSelectRepo = (repoDir: string) => {
