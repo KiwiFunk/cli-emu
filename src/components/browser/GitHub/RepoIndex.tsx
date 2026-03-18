@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BookMarked, Star, Circle, Clock, Search, Plus } from 'lucide-react';
 import { fetchRemoteRepos } from '../../../lib/repo';
 
@@ -19,6 +19,11 @@ const RepoIndex: React.FC<RepoIndexProps> = ({ onSelectRepo, onNewRepo }) => {
     };
     loadRepos();
   }, []);
+
+  // useCallback to memoize the handler and prevent unnecessary re-renders
+  const handleSelectRepo = useCallback((path: string) => () => {
+      onSelectRepo(path);
+    }, [onSelectRepo]);
 
   const getDisplayName = (path: string) => {
     const parts = path.split('/');
@@ -72,7 +77,7 @@ const RepoIndex: React.FC<RepoIndexProps> = ({ onSelectRepo, onNewRepo }) => {
                 <div className="flex items-center gap-2 mb-1">
                   <BookMarked className="h-4 w-4 text-[#8b949e]" />
                   <button
-                    onClick={() => onSelectRepo(path)}
+                    onClick={handleSelectRepo(path)}
                     className="text-[#58a6ff] hover:underline text-xl font-semibold leading-tight"
                   >
                     {getDisplayName(path)}

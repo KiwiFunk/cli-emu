@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRepoStore } from '../../../store/useRepoStore';   // Subscribe to repo changes
 import { useAppStore } from '../../../store/useAppStore';     // Subscribe to gitRevision
 import { getFileTree } from '../../../lib/repo';              // Allows navigating the file tree of the repo
@@ -60,6 +60,23 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
 
   const navigateTo = (path: string) => setCurrentPath(path);
 
+  // UseCallback to memoize navigation handlers and prevent unnecessary re-renders
+  const handleNavigateToRoot = useCallback(() => {
+      navigateTo("");
+    }, []);
+
+  const handleNavigateToPath = useCallback((path: string) => () => {
+    navigateTo(path);
+  }, []);
+
+  const handleFileClick = useCallback((entry: TreeEntry) => () => {
+    if (entry.isDir) {
+      navigateTo(entry.path);
+    } else {
+      console.log("Open file:", entry.path);
+    }
+  }, []);
+
   return (
     <div className="bg-[#0d1117] min-h-screen text-[#c9d1d9] font-sans p-4 md:p-8">
       {/* Header */}
@@ -70,7 +87,7 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
           <span className="text-[#8b949e]">/</span>
           <span
             className="font-semibold text-[#58a6ff] hover:underline cursor-pointer"
-            onClick={() => navigateTo("")}
+            onClick={handleNavigateToRoot}
           >
             {repoName}
           </span>
@@ -111,7 +128,7 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
             <div key={pathSoFar} className="flex items-center gap-2">
               <span className="text-[#8b949e]">/</span>
               <button
-                onClick={() => navigateTo(pathSoFar)}
+                onClick={handleNavigateToPath(pathSoFar)}
                 className="text-[#58a6ff] hover:underline"
               >
                 {part}
@@ -168,7 +185,7 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
                 name={entry.name}
                 message={entry.isDir ? "Folder" : "Source File"}
                 time="now"
-                onClick={() => entry.isDir ? navigateTo(entry.path) : console.log("Open file:", entry.path)}
+                onClick={handleFileClick(entry)}
               />
             ))
           )}
