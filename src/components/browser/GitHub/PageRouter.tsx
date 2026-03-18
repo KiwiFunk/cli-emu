@@ -36,23 +36,24 @@ function PageRouter() {
 
   return (
     <>
-      {(() => {
-        switch (view) {
-          case 'EMPTY':
-            return <EmptyState openForm={() => navigate('CREATE_FORM')} />;
-          case 'CREATE_FORM':
-            return <CreateRepoForm onSubmit={handleCreateRepo} />;
-          case 'REPO_INDEX':
-            return <RepoIndex
-              onSelectRepo={handleSelectRepo}
-              onNewRepo={() => navigate('CREATE_FORM')}
-            />;
-          case 'REPO_VIEW':
-            return <GithubRepo onNavigateToIndex={() => navigate('REPO_INDEX')} />;
-          default:
-            return null;
-        }
-      })()}
+      {view === 'EMPTY' && (
+        <EmptyState openForm={() => navigate('CREATE_FORM')} />
+      )}
+
+      {view === 'CREATE_FORM' && (
+        <CreateRepoForm onSubmit={handleCreateRepo} />
+      )}
+
+      {view === 'REPO_INDEX' && (
+        <RepoIndex
+          onSelectRepo={handleSelectRepo}
+          onNewRepo={() => navigate('CREATE_FORM')}
+        />
+      )}
+
+      {view === 'REPO_VIEW' && (
+        <GithubRepo onNavigateToIndex={() => navigate('REPO_INDEX')} />
+      )}
     </>
   );
 }
