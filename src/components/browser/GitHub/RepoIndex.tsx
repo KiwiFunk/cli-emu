@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { BookMarked, Star, Circle, Clock, Search, Plus } from 'lucide-react';
 import { fetchRemoteRepos } from '../../../lib/repo';
+import { useAppStore } from '../../../store/useAppStore';
 
 interface RepoIndexProps {
   onSelectRepo: (repoDir: string) => void;
@@ -10,6 +11,11 @@ interface RepoIndexProps {
 const RepoIndex: React.FC<RepoIndexProps> = ({ onSelectRepo, onNewRepo }) => {
   const [repoPaths, setRepoPaths] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Set the browser URL when this page becomes the active tab
+  useEffect(() => {
+    useAppStore.getState().setBrowserUrl('https://github.com/user');
+  }, []);
 
   useEffect(() => {
     const loadRepos = async () => {

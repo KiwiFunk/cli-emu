@@ -1,4 +1,13 @@
+import { useEffect } from "react";
+import { useAppStore } from "../../store/useAppStore";
+
 export default function Glossary() {
+
+  // Set the browser URL when this page becomes the active tab
+  useEffect(() => {
+    useAppStore.getState().setBrowserUrl('https://localhost:3000/glossary');
+  }, []);
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Glossary</h1>

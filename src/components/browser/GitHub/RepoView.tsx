@@ -58,6 +58,15 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
     loadFiles();
   }, [repoDir, currentPath, gitRevision]);
 
+  // Sync the internal path to the global Browser URL
+  useEffect(() => {
+    let url = `https://github.com/user/${repoName}`;
+    if (currentPath) {
+      url += `/${currentPath}`;
+    }
+    useAppStore.getState().setBrowserUrl(url);
+  }, [repoName, currentPath]);
+
   const navigateTo = (path: string) => setCurrentPath(path);
 
   // UseCallback to memoize navigation handlers and prevent unnecessary re-renders

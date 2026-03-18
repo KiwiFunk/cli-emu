@@ -9,6 +9,11 @@ export default function Challenges() {
   const runChecks = useChallengeStore(state => state.runChecks);
   const gitRevision = useAppStore(state => state.gitRevision);
 
+  // Set the browser URL when this page becomes the active tab
+  useEffect(() => {
+    useAppStore.getState().setBrowserUrl('https://localhost:3000/home');
+  }, []);
+
   // Re-run checks on mount and whenever gitRevision changes
   // (gitRevision bumps after push/createRepo, covering browser-side actions)
   useEffect(() => {
