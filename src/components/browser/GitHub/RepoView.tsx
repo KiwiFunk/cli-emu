@@ -36,7 +36,7 @@ interface RepoViewProps {
 const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
 
   // Subscribe to Zustand stores — component re-renders when these change
-  const repoDir = useRepoStore(state => state.repoDir);
+  const repoDir = useRepoStore(state => state.repoDir);         // Current repo directory (e.g. /remote/my-repo.git)
   const gitRevision = useAppStore(state => state.gitRevision);
   const repoName = repoDir ? repoDir.split('/').pop()?.replace('.git', '') : 'my-cool-repo';
 
