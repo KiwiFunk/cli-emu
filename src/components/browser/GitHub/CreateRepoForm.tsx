@@ -11,6 +11,14 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleRepoNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRepoName(e.target.value);
+  };
+
+  const handleAddReadmeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAddReadme(e.target.checked);
+  };
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -73,7 +81,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
               <input
                 type="text"
                 value={repoName}
-                onChange={(e) => setRepoName(e.target.value)}
+                onChange={handleRepoNameChange}
                 className="w-full md:w-80 bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-sm focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] outline-none transition-all"
                 required
               />
@@ -159,7 +167,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
                 id="readme"
                 className="accent-[#58a6ff]"
                 checked={addReadme}
-                onChange={(e) => setAddReadme(e.target.checked)}
+                onChange={handleAddReadmeChange}
               />
               <label
                 htmlFor="readme"
