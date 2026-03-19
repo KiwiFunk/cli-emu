@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
+import type { CommandOption, CommandDef } from "@/types";
 
-const shellCommands = [
+const shellCommands: CommandDef[] = [
   {
     command: 'ls',
     description: 'List directory contents',
@@ -39,7 +40,7 @@ const shellCommands = [
   },
 ];
 
-const gitCommands = [
+const gitCommands: CommandDef[] = [
   {
     command: 'git init',
     description: 'Initialize a new Git repository'
@@ -101,7 +102,7 @@ export default function Glossary() {
     useAppStore.getState().setBrowserUrl('https://localhost:3000/glossary');
   }, []);
 
-  const renderCommandCard = ({ command, description, flags, args }: any, type: 'shell' | 'git') => {
+  const renderCommandCard = ({ command, description, flags, args }: CommandDef, type: 'shell' | 'git') => {
     const themeColor = type === 'shell' ? 'blue' : 'emerald';
 
     return (
@@ -121,7 +122,7 @@ export default function Glossary() {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Arguments</h4>
                 <ul className="space-y-1">
-                  {args.map((arg: any) => (
+                  {args.map((arg) => (
                     <li key={arg.name} className="text-xs flex gap-2 items-start">
                       <code className="text-slate-800 font-mono font-medium whitespace-nowrap">{arg.name}</code>
                       <span className="text-slate-500 leading-snug">- {arg.desc}</span>
@@ -135,7 +136,7 @@ export default function Glossary() {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Flags</h4>
                 <ul className="space-y-1">
-                  {flags.map((flag: any) => (
+                  {flags.map((flag) => (
                     <li key={flag.name} className="text-xs flex gap-2 items-start">
                       <code className="text-slate-800 font-mono font-medium whitespace-nowrap">{flag.name}</code>
                       <span className="text-slate-500 leading-snug">- {flag.desc}</span>
