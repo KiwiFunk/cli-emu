@@ -1,6 +1,6 @@
 import git from 'isomorphic-git';
-import fs from '../../fileSystem.ts';
-import { getCwd } from "../../../store/useTerminalStore.ts";
+import fs from '@/lib/fileSystem.ts';
+import { getCwd } from "@/store/useTerminalStore.ts";
 
 /**
  * git log

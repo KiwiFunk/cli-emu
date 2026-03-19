@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Minus, Square, X, RotateCw, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
-import { useAppStore } from '../../store/useAppStore';
+import { useAppStore } from '@/store/useAppStore';
 
 // Wrapper to provide tab metadata
 interface BrowserTabProps {

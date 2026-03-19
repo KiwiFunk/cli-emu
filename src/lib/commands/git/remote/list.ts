@@ -1,5 +1,5 @@
 import git from 'isomorphic-git';
-import fs from '../../../fileSystem.ts';
+import fs from '@/lib/fileSystem.ts';
 
 export async function list(dir: string, flags: Record<string, boolean | string>): Promise<string> {
   try {

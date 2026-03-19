@@ -1,4 +1,4 @@
-import type { CommandContext } from "../../../types.ts";
+import type { CommandContext } from "@/types.ts";
 
 // Import all our subcommand handlers
 import { init } from "./init.ts";

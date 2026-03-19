@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { hasRemoteRepo, createRepo } from "../../../lib/repo";
-import { useRepoStore } from "../../../store/useRepoStore";
+import { hasRemoteRepo, createRepo } from "@/lib/repo";
+import { useRepoStore } from "@/store/useRepoStore";
 
 // Import Pages
 import CreateRepoForm from "./CreateRepoForm";

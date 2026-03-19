@@ -1,10 +1,10 @@
 import git from 'isomorphic-git';
-import fs from '../../fileSystem.ts';
-import { getCwd } from "../../../store/useTerminalStore.ts";
-import type { CommandContext } from "../../../types.ts";
+import fs from '@/lib/fileSystem.ts';
+import { getCwd } from "@/store/useTerminalStore.ts";
+import type { CommandContext } from "@/types.ts";
 import { urlToPath } from '../helpers.ts';
 import { copyMissingObjects } from './utils.ts';
-import { useAppStore } from '../../../store/useAppStore.ts';
+import { useAppStore } from '@/store/useAppStore.ts';
 
 export async function push(ctx: CommandContext): Promise<string> {
   const { args } = ctx;

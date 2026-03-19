@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Book, Lock, ChevronDown, Info } from "lucide-react";
-import { useAppStore } from '../../../store/useAppStore';
+import { useAppStore } from '@/store/useAppStore';
 
 interface CreateRepoFormProps {
   onSubmit: (name: string, addReadme: boolean) => Promise<void>;

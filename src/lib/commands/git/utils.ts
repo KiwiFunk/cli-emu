@@ -1,5 +1,5 @@
 import git from 'isomorphic-git';
-import fs from '../../fileSystem.ts';
+import fs from '@/lib/fileSystem.ts';
 import type { CommitObject, TreeEntry } from 'isomorphic-git';
 
 // Helper functions specific to git operations

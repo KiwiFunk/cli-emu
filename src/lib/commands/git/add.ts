@@ -1,7 +1,7 @@
 import git from 'isomorphic-git';
-import fs from '../../fileSystem.ts';
-import { getCwd } from "../../../store/useTerminalStore.ts";
-import type { CommandContext } from "../../../types.ts";
+import fs from '@/lib/fileSystem.ts';
+import { getCwd } from "@/store/useTerminalStore.ts";
+import type { CommandContext } from "@/types.ts";
 import { exists } from '../helpers.ts';
 
 // git add <file>

@@ -1,6 +1,6 @@
 import git from 'isomorphic-git';
-import fs from '../../fileSystem.ts';
-import type { CommandContext } from "../../../types.ts";
+import fs from '@/lib/fileSystem.ts';
+import type { CommandContext } from "@/types.ts";
 import { exists, resolvePath, urlToPath } from '../helpers.ts';
 import { mkdir } from '../shell.ts';
 import { copyMissingObjects } from './utils.ts';
@@ -21,7 +21,7 @@ export async function clone(ctx: CommandContext): Promise<string> {
   if (!(await exists(fs, bareDir, 'dir'))) return `fatal: repository '${userUrl}' not found`;
 
   try {
-    await mkdir({ args: [targetDir], flags: { p: true } } as any);
+    await mkdir({ args: [targetDir], flags: { p: true }, raw: null, subcmd: null });
     await git.init({ fs, dir: targetDir });
     await git.addRemote({ fs, dir: targetDir, remote: 'origin', url: userUrl });
 

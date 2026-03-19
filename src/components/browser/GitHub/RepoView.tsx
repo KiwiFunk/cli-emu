@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useRepoStore } from '../../../store/useRepoStore';   // Subscribe to repo changes
-import { useAppStore } from '../../../store/useAppStore';     // Subscribe to gitRevision
-import { getFileTree } from '../../../lib/repo';              // Allows navigating the file tree of the repo
+import { useRepoStore } from '@/store/useRepoStore';   // Subscribe to repo changes
+import { useAppStore } from '@/store/useAppStore';     // Subscribe to gitRevision
+import { getFileTree } from '@/lib/repo';              // Allows navigating the file tree of the repo
 
 import {                                                      // Lucide Icon Imports
   Book, Folder, FileText, ChevronDown, Play, Code,

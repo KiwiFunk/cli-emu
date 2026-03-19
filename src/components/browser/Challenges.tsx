@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { challenges } from '../../lib/challenges';
-import { useChallengeStore } from '../../store/useChallengeStore';
-import { useAppStore } from '../../store/useAppStore';
+import { challenges } from '@/lib/challenges';
+import { useChallengeStore } from '@/store/useChallengeStore';
+import { useAppStore } from '@/store/useAppStore';
 import { CheckCircle2, Circle, ChevronRight, Lightbulb } from 'lucide-react';
 
 export default function Challenges() {

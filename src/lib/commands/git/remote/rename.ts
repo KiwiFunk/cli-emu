@@ -1,5 +1,5 @@
 import git from 'isomorphic-git';
-import fs from '../../../fileSystem.ts';
+import fs from '@/lib/fileSystem.ts';
 
 export async function rename(dir: string, args: string[]): Promise<string> {
   const oldName = args[1];

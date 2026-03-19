@@ -1,6 +1,6 @@
 import git from 'isomorphic-git';
-import fs from '../../../fileSystem.ts';
-import { urlToPath } from '../../helpers.ts';
+import fs from '@/lib/fileSystem.ts';
+import { urlToPath } from '@/lib/commands/helpers.ts';
 
 export async function add(dir: string, args: string[]): Promise<string> {
   const remoteName = args[1];

@@ -1,5 +1,5 @@
-import { getCwd } from "../../../../store/useTerminalStore.ts";
-import type { CommandContext } from "../../../../types.ts";
+import { getCwd } from "@/store/useTerminalStore.ts";
+import type { CommandContext } from "@/types.ts";
 
 import { list } from "./list.ts";
 import { add } from "./add.ts";

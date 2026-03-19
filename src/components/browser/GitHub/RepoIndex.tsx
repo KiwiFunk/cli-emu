@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { BookMarked, Star, Circle, Clock, Search, Plus } from "lucide-react";
-import { fetchRemoteRepos } from "../../../lib/repo";
-import { useAppStore } from "../../../store/useAppStore";
+import { fetchRemoteRepos } from "@/lib/repo";
+import { useAppStore } from "@/store/useAppStore";
 
 interface RepoIndexProps {
   onSelectRepo: (repoDir: string) => void;
