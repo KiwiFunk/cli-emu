@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import type { CommandOption, CommandDef } from "@/types";
+import type { CommandDef } from "@/types";
 
 const shellCommands: CommandDef[] = [
   {
