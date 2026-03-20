@@ -1,1 +1,5 @@
-export { clearFS } from "./clearfs"
+import { clearFS } from "./clearfs"
+
+export const debugCommands = {
+  "clearFs": clearFS,
+}
