@@ -1,6 +1,7 @@
 // Imports
-import * as shell from "./shell";
+import * as shell from "./shell/index.ts";
 import * as git from "./git/index";
+import * as debug from "./debug/index";
 import type { CommandContext, CommandFn } from "@/types.ts";
 import { useChallengeStore } from "@/store/useChallengeStore.ts";
 
@@ -22,7 +23,7 @@ import { useChallengeStore } from "@/store/useChallengeStore.ts";
    "help": async () => `Available commands: ${Object.keys(registry).join(", ")}`,
 
    // Debugging
-   "clearfs": shell.clearFS,
+   "clearfs": debug.clearFS,
  };
 
 const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm", "node"]
