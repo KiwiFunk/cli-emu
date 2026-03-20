@@ -71,6 +71,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
         <form action={submitAction} className="space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-end gap-2">
             <div>
+              {/* Owner Section - Currently Visual only */}
               <label className="block font-semibold mb-2 text-[#f0f6fc]">Owner *</label>
               <button
                 type="button"
@@ -83,6 +84,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
 
             <span className="hidden md:block text-2xl mb-1 text-[#8b949e]">/</span>
 
+            {/* Repo Name Section */}
             <div className="flex-1 w-full">
               <label htmlFor="repoName" className="block font-semibold mb-2 text-[#f0f6fc]">
                 Repository name *
@@ -111,7 +113,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
             ?
           </p>
 
-          {/* Description */}
+          {/* Description Section */}
           <div>
             <label htmlFor="description" className="block font-semibold mb-2 text-[#f0f6fc]">
               Description <span className="text-[#8b949e] font-normal text-sm">(optional)</span>
@@ -126,7 +128,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
 
           <hr className="border-[#30363d]" />
 
-          {/* Visibility Section - Uncontrolled */}
+          {/* Visibility Section */}
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <input
@@ -168,7 +170,7 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
 
           <hr className="border-[#30363d]" />
 
-          {/* Initialization Section - Uncontrolled */}
+          {/* Initialization Section */}
           <div className="space-y-4">
             <h3 className="font-semibold text-[#f0f6fc]">Initialize this repository with:</h3>
             <div className="flex items-center gap-3">
