@@ -45,7 +45,7 @@ const COMMANDS_WITH_SUBCOMMANDS = ["git", "npm", "node"]
      const result = subcmd ? await handler({ ...ctx, subcmd }) : await handler(ctx);
 
      // Re-evaluate challenge completion after every command
-     useChallengeStore.getState().runChecks();
+     await useChallengeStore.getState().runChecks();
 
      return result;
 
