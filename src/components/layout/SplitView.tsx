@@ -4,7 +4,7 @@ import Terminal from '@/components/terminal/Terminal';
 import BrowserFrame from '../browser/BrowserFrame';
 import { BrowserTab } from '../browser/BrowserFrame';
 import Challenges from '../browser/Challenges';
-import PageRouter from '../browser/GitHub/PageRouter';
+import RemoteBrowser from '../browser/RemoteBrowser'
 import Glossary from '../browser/Glossary';
 
 const panelStyles = "bg-slate-800 rounded-md shadow-md overflow-hidden";
@@ -25,8 +25,8 @@ function SplitView({ className }: SplitViewProps) {
             <BrowserTab tabTitle="Intro | Challenges">
               <Challenges />
             </BrowserTab>
-            <BrowserTab tabTitle="GitHub">
-              <PageRouter />
+            <BrowserTab tabTitle="Remote">
+              <RemoteBrowser />
             </BrowserTab>
             <BrowserTab tabTitle="Glossary">
               <Glossary />
