@@ -7,6 +7,8 @@ import Challenges from '../browser/Challenges';
 import RemoteBrowser from '../browser/RemoteBrowser'
 import Glossary from '../browser/Glossary';
 
+import { useAppStore } from '@/store/useAppStore';
+
 const panelStyles = "bg-slate-800 rounded-md shadow-md overflow-hidden";
 
 interface SplitViewProps {
@@ -14,6 +16,8 @@ interface SplitViewProps {
 }
 
 function SplitView({ className }: SplitViewProps) {
+
+  const remoteName = useAppStore(state => state.remote)
 
   return (
     <>
@@ -25,7 +29,7 @@ function SplitView({ className }: SplitViewProps) {
             <BrowserTab tabTitle="Intro | Challenges">
               <Challenges />
             </BrowserTab>
-            <BrowserTab tabTitle="Remote">
+            <BrowserTab tabTitle={remoteName}>
               <RemoteBrowser />
             </BrowserTab>
             <BrowserTab tabTitle="Glossary">

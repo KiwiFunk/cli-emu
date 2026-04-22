@@ -11,9 +11,9 @@ function RemoteBrowser() {
   const activeSkin =  useAppStore(state => state.remote)
 
   switch (activeSkin) {
-    case 'github':
+    case 'GitHub':
       return <GithubRouter />;
-    case 'azure':
+    case 'Azure':
       return <AzureRouter />;
     default:
       return <SelectProvider />;
