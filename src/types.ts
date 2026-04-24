@@ -19,3 +19,11 @@ export interface CommandDef {
   flags?: CommandOption[]; // ? makes this property optional
   args?: CommandOption[];  // ? makes this property optional
 }
+
+// Remote Repo Interfaces
+
+export interface CreateRepoFormProps {
+  isPending: boolean;     // Indicates if the form submission is in progress
+  error: string | null;   // Error message to display, or null if no error
+  onSubmit: (name: string, addReadme: boolean) => Promise<void>;
+}

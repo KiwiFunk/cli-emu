@@ -4,9 +4,7 @@ import { useState, useEffect, useActionState } from "react";
 import { Book, Lock, ChevronDown, Info } from "lucide-react";
 import { useAppStore } from '@/store/useAppStore';
 
-interface CreateRepoFormProps {
-  onSubmit: (name: string, addReadme: boolean) => Promise<void>;
-}
+import type { CreateRepoFormProps } from "@/types";
 
 // Keep outside main function to prevent re-creating on render
 const getNameSuggestion = (): string => {

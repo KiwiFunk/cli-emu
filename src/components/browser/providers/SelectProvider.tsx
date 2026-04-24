@@ -4,8 +4,8 @@ export default function SelectProvider() {
   const setRemote = useAppStore(state => state.setRemote);
 
   return (
-    <div className="space-y-4">
-      <div className="text-lg font-semibold">Select Remote Provider</div>
+    <div className="space-y-4 p-8">
+      <div className="text-2xl font-semibold">Select Remote Provider</div>
 
       <div className="flex flex-row gap-4">
         <button
