@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect } from "react";
 import { Book, Lock, ChevronDown, Info } from "lucide-react";
 import { useAppStore } from '@/store/useAppStore';
 
@@ -17,7 +17,8 @@ const getNameSuggestion = (): string => {
   return `${randomAdjective}-${randomNoun}`;
 };
 
-const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
+const CreateRepoForm = ({ onSubmit, isPending, error }: CreateRepoFormProps) => {
+
   // Init suggestion via lazy initializer.
   const [suggestion] = useState<string>(getNameSuggestion);
 
@@ -28,25 +29,6 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
   useEffect(() => {
     useAppStore.getState().setBrowserUrl('https://github.com/new');
   }, []);
-
-  // React 19 now uses useActionState
-  const [error, submitAction, isPending] = useActionState(
-    async (_previousState: string | null, formData: FormData) => {
-      try {
-
-        // In React 19, directly extract values from formData using 'name', rather than using controlled inputs
-        const name = formData.get("repoName") as string;
-        const addReadme = formData.get("addReadme") === "on";
-
-        await onSubmit(name, addReadme);
-        return null;
-      } catch (err: unknown) {
-        if (err instanceof Error) return err.message;
-        return "An unexpected error occurred.";
-      }
-    },
-    null
-  );
 
   return (
     <div className="bg-[#0d1117] min-h-full text-[#c9d1d9] font-sans">
@@ -65,8 +47,16 @@ const CreateRepoForm = ({ onSubmit }: CreateRepoFormProps) => {
           </p>
         </header>
 
-        {/* We no longer use onSubmit in React 19 */}
-        <form action={submitAction} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const name = formData.get("repoName") as string;
+          const addReadme = formData.get("addReadme") === "on";
+          onSubmit(name, addReadme);
+          }}
+          className="space-y-6"
+        >
           <div className="flex flex-col md:flex-row items-start md:items-end gap-2">
             <div>
               {/* Owner Section - Currently Visual only */}
