@@ -4,7 +4,7 @@ import Terminal from '@/components/terminal/Terminal';
 import BrowserFrame from '../browser/BrowserFrame';
 import { BrowserTab } from '../browser/BrowserFrame';
 import Challenges from '../browser/Challenges';
-import RemoteBrowser from '../browser/RemoteBrowser'
+import RemoteRouter from '../browser/providers/RemoteRouter' // For Remote
 import Glossary from '../browser/Glossary';
 
 import { useAppStore } from '@/store/useAppStore';
@@ -30,7 +30,7 @@ function SplitView({ className }: SplitViewProps) {
               <Challenges />
             </BrowserTab>
             <BrowserTab tabTitle={remoteName}>
-              <RemoteBrowser />
+              <RemoteRouter />
             </BrowserTab>
             <BrowserTab tabTitle="Glossary">
               <Glossary />
