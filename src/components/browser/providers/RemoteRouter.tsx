@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useActionState } from "react";
 import { hasRemoteRepo, createRepo } from "@/lib/repo";
 import { useRepoStore } from "@/store/useRepoStore";
 import { useAppStore } from '@/store/useAppStore';
@@ -30,10 +30,19 @@ export default function RemoteRouter() {
     });
   }, []);
 
-  const handleCreateRepo = async (name: string, addReadme: boolean) => {
-    await createRepo(name, addReadme);
-    navigate('REPO_VIEW');
-  };
+  const [createError, submitCreateRepo, isCreating] = useActionState(
+    async (_previousState: string | null, formData: { name: string, addReadme: boolean }) => {
+      try {
+        await createRepo(formData.name, formData.addReadme);
+        navigate('REPO_VIEW');
+        return null;
+      } catch (err: unknown) {
+        if (err instanceof Error) return err.message;
+        return "An unexpected error occurred.";
+      }
+    },
+    null
+  );
 
   const handleSelectRepo = (repoDir: string) => {
     useRepoStore.getState().setRepoDir(repoDir);
@@ -45,7 +54,16 @@ export default function RemoteRouter() {
     return (
       <>
         {view === 'EMPTY' && <GitHubEmptyState openForm={() => navigate('CREATE_FORM')} />}
-        {view === 'CREATE_FORM' && <GitHubCreateRepoForm onSubmit={handleCreateRepo} isPending={false} error={null} />}
+        {view === 'CREATE_FORM' &&
+          <GitHubCreateRepoForm
+            onSubmit={async (name, addReadme) => {
+               // useActionState expects us to pass the data, and it returns a transition
+               submitCreateRepo({ name, addReadme });
+            }}
+            isPending={isCreating}
+            error={createError}
+          />
+        }
         {view === 'REPO_INDEX' && <GitHubRepoIndex onSelectRepo={handleSelectRepo} onNewRepo={() => navigate('CREATE_FORM')} />}
         {view === 'REPO_VIEW' && <GitHubRepoView onNavigateToIndex={() => navigate('REPO_INDEX')} />}
       </>
