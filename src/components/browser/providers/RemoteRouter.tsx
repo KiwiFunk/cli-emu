@@ -14,10 +14,35 @@ import GitHubEmptyState from "./GitHub/EmptyRepo";
 
 import SelectProvider from './SelectProvider'
 
+type ProviderSkin = {
+  EmptyState: React.ElementType<{ openForm: () => void }>;
+  CreateRepoForm: React.ElementType<any>; // Update with types from types.ts
+  RepoIndex: React.ElementType<{ onSelectRepo: (dir: string) => void; onNewRepo: () => void }>;
+  RepoView: React.ElementType<{ onNavigateToIndex: () => void }>;
+  // Add any provider-specific components that don't fit the above categories
+  ProviderSpecificExample?: React.ElementType<null>;
+};
+
+// Map All Providers/Skins to their Components
+const providers: Record<string, ProviderSkin> = {
+  GitHub: {
+    EmptyState: GitHubEmptyState,
+    CreateRepoForm: GitHubCreateRepoForm,
+    RepoIndex: GitHubRepoIndex,
+    RepoView: GitHubRepoView,
+  },
+  // Azure: {
+  //   EmptyState: AzureEmptyState,
+  //   CreateRepoForm: AzureCreateRepoForm,
+  //   RepoIndex: AzureRepoIndex,
+  //   RepoView: AzureRepoView,
+  // }
+};
+
 type ViewState = 'EMPTY' | 'CREATE_FORM' | 'REPO_INDEX' | 'REPO_VIEW';
 
 export default function RemoteRouter() {
-  const activeSkin = useAppStore(state => state.remote);
+  const provider = useAppStore(state => state.remote);
   const [view, setView] = useState<ViewState>('EMPTY');
 
   const navigate = (newView: ViewState) => {
@@ -49,36 +74,42 @@ export default function RemoteRouter() {
     navigate('REPO_VIEW');
   };
 
-  // --- RENDERING LOGIC ---
-  if (activeSkin === 'GitHub') {
-    return (
-      <>
-        {view === 'EMPTY' && <GitHubEmptyState openForm={() => navigate('CREATE_FORM')} />}
-        {view === 'CREATE_FORM' &&
-          <GitHubCreateRepoForm
-            onSubmit={async (name, addReadme) => {
-               // useActionState expects us to pass the data, and it returns a transition
-               submitCreateRepo({ name, addReadme });
-            }}
-            isPending={isCreating}
-            error={createError}
-          />
-        }
-        {view === 'REPO_INDEX' && <GitHubRepoIndex onSelectRepo={handleSelectRepo} onNewRepo={() => navigate('CREATE_FORM')} />}
-        {view === 'REPO_VIEW' && <GitHubRepoView onNavigateToIndex={() => navigate('REPO_INDEX')} />}
-      </>
-    );
+  // If no remote provider set
+  if (!provider || !providers[provider]) {
+    return <SelectProvider />;
   }
 
-  if (activeSkin === 'Azure') {
-    return (
-      <div className="p-8 text-white">
-         <h1>ADO</h1>
-         {/* ADO Pages Here */}
-      </div>
-    );
-  }
+  // Get components from the selected remote provider/skin
+  const RemoteComponents = providers[provider];
 
-  // If no valid provider is selected, show selection
-  return <SelectProvider />;
+  return (
+    <>
+      {view === 'EMPTY' && (
+        <RemoteComponents.EmptyState openForm={() => navigate('CREATE_FORM')} />
+      )}
+
+      {view === 'CREATE_FORM' && (
+        <RemoteComponents.CreateRepoForm
+          onSubmit={async (name: string, addReadme: boolean) => {
+            submitCreateRepo({ name, addReadme });
+          }}
+          isPending={isCreating}
+          error={createError}
+        />
+      )}
+
+      {view === 'REPO_INDEX' && (
+        <RemoteComponents.RepoIndex
+          onSelectRepo={handleSelectRepo}
+          onNewRepo={() => navigate('CREATE_FORM')}
+        />
+      )}
+
+      {view === 'REPO_VIEW' && (
+        <RemoteComponents.RepoView
+          onNavigateToIndex={() => navigate('REPO_INDEX')}
+        />
+      )}
+    </>
+  );
 }
