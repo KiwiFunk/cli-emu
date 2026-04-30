@@ -9,6 +9,11 @@ import GitHubRepoIndex from "./GitHub/RepoIndex";
 import GitHubRepoView from "./GitHub/RepoView";
 import GitHubEmptyState from "./GitHub/EmptyRepo";
 
+//import AzureCreateRepoForm from "./Azure/CreateRepoForm";
+import AzureRepoIndex from "./Azure/RepoIndex";
+//import AzureRepoView from "./Azure/RepoView";
+//import AzureEmptyState from "./Azure/EmptyRepo";
+
 // Azure DevOps (ADO)
 // import AzureRepoIndex from "./Azure/RepoIndex";
 
@@ -31,12 +36,12 @@ const providers: Record<string, ProviderSkin> = {
     RepoIndex: GitHubRepoIndex,
     RepoView: GitHubRepoView,
   },
-  // Azure: {
-  //   EmptyState: AzureEmptyState,
-  //   CreateRepoForm: AzureCreateRepoForm,
-  //   RepoIndex: AzureRepoIndex,
-  //   RepoView: AzureRepoView,
-  // }
+  Azure: {
+    //EmptyState: AzureEmptyState,
+    //CreateRepoForm: AzureCreateRepoForm,
+    RepoIndex: AzureRepoIndex,
+    //RepoView: AzureRepoView,
+  },
 };
 
 type ViewState = 'EMPTY' | 'CREATE_FORM' | 'REPO_INDEX' | 'REPO_VIEW';
