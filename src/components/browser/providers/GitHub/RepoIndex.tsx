@@ -1,43 +1,25 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback } from "react";
+import { useRemoteIndex } from "@/hooks/useRemoteIndex";
+
 import { BookMarked, Star, Circle, Clock, Search, Plus } from "lucide-react";
-import { fetchRemoteRepos } from "@/lib/repo";
-import { useAppStore } from "@/store/useAppStore";
+
 
 interface RepoIndexProps {
   onSelectRepo: (repoDir: string) => void;
   onNewRepo?: () => void;
 }
 
-const RepoIndex: React.FC<RepoIndexProps> = ({ onSelectRepo, onNewRepo }) => {
-  const [repoPaths, setRepoPaths] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+const RepoIndex = ({ onSelectRepo, onNewRepo }: RepoIndexProps) => {
+  const { repoPaths, loading } = useRemoteIndex("https://github.com/user");
 
-  // Set the browser URL when this page becomes the active tab
-  useEffect(() => {
-    useAppStore.getState().setBrowserUrl("https://github.com/user");
-  }, []);
-
-  useEffect(() => {
-    const loadRepos = async () => {
-      const paths = await fetchRemoteRepos();
-      setRepoPaths(paths);
-      setLoading(false);
-    };
-    loadRepos();
-  }, []);
-
-  // useCallback to memoize the handler and prevent unnecessary re-renders
-  const handleSelectRepo = useCallback(
-    (path: string) => () => {
-      onSelectRepo(path);
-    },
-    [onSelectRepo],
-  );
+  // Keep these helpers here! They are purely presentational logic.
+  const handleSelectRepo = useCallback((path: string) => () => {
+    onSelectRepo(path);
+  }, [onSelectRepo]);
 
   const getDisplayName = (path: string) => {
     const parts = path.split("/");
-    const lastPart = parts[parts.length - 1];
-    return lastPart.replace(".git", "");
+    return parts[parts.length - 1].replace(".git", "");
   };
 
   return (
