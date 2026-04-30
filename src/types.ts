@@ -31,3 +31,8 @@ export interface CreateRepoFormProps {
 export interface RepoViewProps {
   onNavigateToIndex?: () => void; // Navigate from repo view back to remote index
 }
+
+export interface RepoIndexProps {
+  onSelectRepo: (repoDir: string) => void;  // Callback when a repo is selected from index
+  onNewRepo: () => void;                    // Callback to navigate to the create repo form
+}
