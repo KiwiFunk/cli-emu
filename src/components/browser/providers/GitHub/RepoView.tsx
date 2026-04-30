@@ -1,20 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useRepoStore } from '@/store/useRepoStore';   // Subscribe to repo changes
-import { useAppStore } from '@/store/useAppStore';     // Subscribe to gitRevision
-import { getFileTree } from '@/lib/repo';              // Allows navigating the file tree of the repo
+import { useFileExplorer } from '@/hooks/useFileExplorer';
+import type { RepoViewProps } from '@/types';
 
-import {                                                      // Lucide Icon Imports
+import {
   Book, Folder, FileText, ChevronDown, Play, Code,
   Settings, Star, GitFork, Eye
 } from 'lucide-react';
 
-// Define data structs
-interface TreeEntry {
-  name: string;
-  isDir: boolean;
-  path: string;
-}
-
+// If other remotes have the same pattern, move this to a shared types file and make it more generic
 interface FileRowProps {
   icon: React.ReactNode;
   name: string;
@@ -29,62 +21,13 @@ interface RepoActionButtonProps {
   count: string | number;
 }
 
-interface RepoViewProps {
-  onNavigateToIndex?: () => void;
-}
-
 const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
 
-  // Subscribe to Zustand stores — component re-renders when these change
-  const repoDir = useRepoStore(state => state.repoDir);         // Current repo directory (e.g. /remote/my-repo.git)
-  const gitRevision = useAppStore(state => state.gitRevision);
-  const repoName = repoDir ? repoDir.split('/').pop()?.replace('.git', '') : 'my-cool-repo';
-
-  const [currentPath, setCurrentPath] = useState<string>("");   // Current path within repo
-  const [entries, setEntries] = useState<TreeEntry[]>([]);      // Files/folders at the current path
-  const [loading, setLoading] = useState(true);                 // Loading state for repo contents
-
-  // Fetch file tree whenever the path or repo changes. Update to memoize??
-  useEffect(() => {
-    const loadFiles = async () => {
-      if (!repoDir) return;
-      setLoading(true);
-      // Hardcoded 'main' for ref, could eventually add branch switching functionality
-      const data = await getFileTree(repoDir, 'main', currentPath);
-      setEntries(data);
-      setLoading(false);
-    };
-
-    loadFiles();
-  }, [repoDir, currentPath, gitRevision]);
-
-  // Sync the internal path to the global Browser URL
-  useEffect(() => {
-    let url = `https://github.com/user/${repoName}`;
-    if (currentPath) {
-      url += `/${currentPath}`;
-    }
-    useAppStore.getState().setBrowserUrl(url);
-  }, [repoName, currentPath]);
-
-  const navigateTo = (path: string) => setCurrentPath(path);
-
-  // UseCallback to memoize navigation handlers and prevent unnecessary re-renders
-  const handleNavigateToRoot = useCallback(() => {
-      navigateTo("");
-    }, []);
-
-  const handleNavigateToPath = useCallback((path: string) => () => {
-    navigateTo(path);
-  }, []);
-
-  const handleFileClick = useCallback((entry: TreeEntry) => () => {
-    if (entry.isDir) {
-      navigateTo(entry.path);
-    } else {
-      console.log("Open file:", entry.path);
-    }
-  }, []);
+  // Get logic, state, and functions from fileExplorer hook.
+  const {
+    repoName, currentPath, entries, loading, navigateTo,
+    handleNavigateToRoot, handleNavigateToPath, handleFileClick
+  } = useFileExplorer();
 
   return (
     <div className="bg-[#0d1117] min-h-screen text-[#c9d1d9] font-sans p-4 md:p-8">
@@ -159,7 +102,7 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
 
       {/* Real File Explorer */}
       <div className="border border-[#30363d] rounded-md overflow-hidden bg-[#0d1117]">
-        {/* Latest Commit Bar (Mocked info, but functional context) */}
+        {/* Latest Commit Bar */}
         <div className="bg-[#161b22] p-4 border-b border-[#30363d] flex justify-between items-center text-sm">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded-full bg-[#1f6feb] flex items-center justify-center text-[10px] text-white font-bold">
@@ -171,7 +114,6 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
             </span>
           </div>
           <div className="flex items-center gap-4">
-              {/* Static placeholder values for now */}
              <span className="text-[#8b949e] text-xs">ae34f21</span>
              <span className="text-[#8b949e]">just now</span>
           </div>

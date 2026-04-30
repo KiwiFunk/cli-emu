@@ -27,3 +27,7 @@ export interface CreateRepoFormProps {
   error: string | null;   // Error message to display, or null if no error
   onSubmit: (name: string, addReadme: boolean) => Promise<void>;
 }
+
+export interface RepoViewProps {
+  onNavigateToIndex?: () => void; // Navigate from repo view back to remote index
+}
