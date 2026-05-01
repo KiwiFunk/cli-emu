@@ -1,62 +1,74 @@
-import { useState, useEffect, useActionState } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import { hasRemoteRepo, createRepo } from "@/lib/repo";
 import { useRepoStore } from "@/store/useRepoStore";
 import { useAppStore } from '@/store/useAppStore';
 
-// GitHub
-import GitHubCreateRepoForm from "./GitHub/CreateRepoForm";
-import GitHubRepoIndex from "./GitHub/RepoIndex";
-import GitHubRepoView from "./GitHub/RepoView";
-import GitHubEmptyState from "./GitHub/EmptyRepo";
-
-//import AzureCreateRepoForm from "./Azure/CreateRepoForm";
-import AzureRepoIndex from "./Azure/RepoIndex";
-//import AzureRepoView from "./Azure/RepoView";
-//import AzureEmptyState from "./Azure/EmptyRepo";
-
-// Azure DevOps (ADO)
-// import AzureRepoIndex from "./Azure/RepoIndex";
+import type { CreateRepoFormProps, RepoIndexProps, RepoViewProps, SkinLayoutProps, RouterState } from "@/types";
 
 import SelectProvider from './SelectProvider'
 
-type ProviderSkin = {
-  EmptyState: React.ElementType<{ openForm: () => void }>;
-  CreateRepoForm: React.ElementType<any>; // Update with types from types.ts
-  RepoIndex: React.ElementType<{ onSelectRepo: (dir: string) => void; onNewRepo: () => void }>;
-  RepoView: React.ElementType<{ onNavigateToIndex: () => void }>;
-  // Add any provider-specific components that don't fit the above categories
-  ProviderSpecificExample?: React.ElementType<null>;
-};
+// GITHUB SKIN
+import GitHubLayout from "./GitHub/Layout";
+import GitHubIndexView from "./GitHub/views/IndexView";
+import GitHubRepoView from "./GitHub/views/RepoView";
+import GitHubCreateView from "./GitHub/views/CreateView";
+import GitHubEmptyView from "./GitHub/views/EmptyView";
 
-// Map All Providers/Skins to their Components
-const providers: Record<string, ProviderSkin> = {
+// AZURE SKIN (WIP)
+// import AzureLayout from "./Azure/Layout";
+// import AzureIndexView from "./Azure/views/IndexView";
+// import AzureRepoView from "./Azure/views/RepoView";
+// import AzureCreateView from "./Azure/views/CreateView";
+// import AzureEmptyView from "./Azure/views/EmptyView";
+
+export interface SkinConfig {
+
+  // Tell router how provider handles actions
+  routingPreferences: {
+    createAction: 'navigate_to_page' | 'open_modal';
+  };
+
+  // Shell / Persistant UI
+  Layout: React.ElementType<{ children: React.ReactNode, currentView: RouterState }>;
+
+  // Views
+  EmptyView: React.ElementType<{ openForm: () => void }>; // Props for empty state (e.g. "Create New Repo" button)
+  IndexView: React.ElementType<RepoIndexProps>;
+  RepoView: React.ElementType<RepoViewProps>;
+  CreateView?: React.ElementType<CreateRepoFormProps>;  // Optional, used if createAction is page
+
+  // Overlay Elelemts (e.g. Modals)
+  CreateModal?: React.ElementType<CreateRepoFormProps>; // Optional, used if createAction is modal
+}
+
+// Map provider names to their skin configs
+const providers: Record<string, SkinConfig> = {
   GitHub: {
-    EmptyState: GitHubEmptyState,
-    CreateRepoForm: GitHubCreateRepoForm,
-    RepoIndex: GitHubRepoIndex,
+    routingPreferences: { createAction: 'navigate_to_page' }, // GitHub uses a dedicated page
+    Layout: GitHubLayout,
+    EmptyView: GitHubEmptyView,
+    IndexView: GitHubIndexView,
     RepoView: GitHubRepoView,
-  },
-  Azure: {
-    //EmptyState: AzureEmptyState,
-    //CreateRepoForm: AzureCreateRepoForm,
-    RepoIndex: AzureRepoIndex,
-    //RepoView: AzureRepoView,
-  },
+    CreateView: GitHubCreateView,
+  }
 };
-
-type ViewState = 'EMPTY' | 'CREATE_FORM' | 'REPO_INDEX' | 'REPO_VIEW';
 
 export default function RemoteRouter() {
   const provider = useAppStore(state => state.remote);
-  const [view, setView] = useState<ViewState>('EMPTY');
 
-  const navigate = (newView: ViewState) => {
-    setView(newView);
-  };
+  // Router State
+  const [routerState, setRouterState] = useState<RouterState>({
+    activePage: 'EMPTY',
+    activeModal: null
+  });
+
+  const navigatePage = (page: RouterState['activePage']) => setRouterState(s => ({ ...s, activePage: page }));
+  const openModal = (modal: RouterState['activeModal']) => setRouterState(s => ({ ...s, activeModal: modal }));
+  const closeModal = () => setRouterState(s => ({ ...s, activeModal: null }));
 
   useEffect(() => {
     hasRemoteRepo().then(exists => {
-      if (exists) navigate('REPO_INDEX');
+      if (exists) navigatePage('INDEX');
     });
   }, []);
 
@@ -64,7 +76,8 @@ export default function RemoteRouter() {
     async (_previousState: string | null, formData: { name: string, addReadme: boolean }) => {
       try {
         await createRepo(formData.name, formData.addReadme);
-        navigate('REPO_VIEW');
+        navigatePage('REPO');
+        closeModal(); // Ensure any open modals close!
         return null;
       } catch (err: unknown) {
         if (err instanceof Error) return err.message;
@@ -76,45 +89,49 @@ export default function RemoteRouter() {
 
   const handleSelectRepo = (repoDir: string) => {
     useRepoStore.getState().setRepoDir(repoDir);
-    navigate('REPO_VIEW');
+    navigatePage('REPO');
   };
 
-  // If no remote provider set
-  if (!provider || !providers[provider]) {
-    return <SelectProvider />;
-  }
+  if (!provider || !providers[provider]) return <SelectProvider />;
 
-  // Get components from the selected remote provider/skin
-  const RemoteComponents = providers[provider];
+  const Skin = providers[provider];
+
+  // Handle Page Navigation vs Modal Opening based on provider preferences
+  const handleNewRepoClick = () => {
+    if (Skin.routingPreferences.createAction === 'open_modal') {
+      openModal('CREATE');
+    } else {
+      navigatePage('CREATE');
+    }
+  };
 
   return (
-    <>
-      {view === 'EMPTY' && (
-        <RemoteComponents.EmptyState openForm={() => navigate('CREATE_FORM')} />
-      )}
+    <Skin.Layout currentView={routerState}>
 
-      {view === 'CREATE_FORM' && (
-        <RemoteComponents.CreateRepoForm
-          onSubmit={async (name: string, addReadme: boolean) => {
-            submitCreateRepo({ name, addReadme });
-          }}
+      {/* Views */}
+      {routerState.activePage === 'EMPTY' && <Skin.EmptyView openForm={handleNewRepoClick} />}
+
+      {routerState.activePage === 'INDEX' && <Skin.IndexView onSelectRepo={handleSelectRepo} onNewRepo={handleNewRepoClick} />}
+
+      {routerState.activePage === 'REPO' && <Skin.RepoView onNavigateToIndex={() => navigatePage('INDEX')} />}
+
+      {routerState.activePage === 'CREATE' && Skin.CreateView && (
+        <Skin.CreateView
+          onSubmit={async (name, addReadme) => submitCreateRepo({ name, addReadme })}
           isPending={isCreating}
           error={createError}
         />
       )}
 
-      {view === 'REPO_INDEX' && (
-        <RemoteComponents.RepoIndex
-          onSelectRepo={handleSelectRepo}
-          onNewRepo={() => navigate('CREATE_FORM')}
+      {/* Overlays */}
+      {routerState.activeModal === 'CREATE' && Skin.CreateModal && (
+        <Skin.CreateModal
+          onSubmit={async (name, addReadme) => submitCreateRepo({ name, addReadme })}
+          isPending={isCreating}
+          error={createError}
         />
       )}
 
-      {view === 'REPO_VIEW' && (
-        <RemoteComponents.RepoView
-          onNavigateToIndex={() => navigate('REPO_INDEX')}
-        />
-      )}
-    </>
+    </Skin.Layout>
   );
 }
