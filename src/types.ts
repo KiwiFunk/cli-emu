@@ -20,8 +20,32 @@ export interface CommandDef {
   args?: CommandOption[];  // ? makes this property optional
 }
 
-// Remote Repo Interfaces
+// Remote Router Interface
+export interface RouterState {
+  activePage: 'INDEX' | 'REPO' | 'CREATE';
+  activeModal: 'CREATE' | null;
+}
 
+// Remote Providers
+export interface SkinConfig {
+  // Tell router how provider handles actions
+  routingPreferences: {
+    createAction: 'navigate_to_page' | 'open_modal';
+  };
+
+  // Shell / Persistant UI
+  Layout: React.ElementType<{ children: React.ReactNode, currentView: RouterState }>;
+
+  // Views
+  IndexView: React.ElementType<RepoIndexProps>;
+  RepoView: React.ElementType<RepoViewProps>;
+  CreateView?: React.ElementType<CreateRepoFormProps>; // Optional, used if createAction is page
+
+  // Overlay Elelemts (e.g. Modals)
+  CreateModal?: React.ElementType<CreateRepoFormProps>; // Optional, used if createAction is modal
+}
+
+// Remote Repo Interfaces
 export interface CreateRepoFormProps {
   isPending: boolean;     // Indicates if the form submission is in progress
   error: string | null;   // Error message to display, or null if no error
