@@ -15,11 +15,11 @@ import GitHubCreateView from "./GitHub/views/CreateView";
 import GitHubEmptyView from "./GitHub/views/EmptyView";
 
 // AZURE SKIN (WIP)
-// import AzureLayout from "./Azure/Layout";
-// import AzureIndexView from "./Azure/views/IndexView";
-// import AzureRepoView from "./Azure/views/RepoView";
-// import AzureCreateView from "./Azure/views/CreateView";
-// import AzureEmptyView from "./Azure/views/EmptyView";
+import AzureLayout from "./Azure/Layout";
+import AzureIndexView from "./Azure/views/IndexView";
+import AzureRepoView from "./Azure/views/RepoView";
+import AzureCreateModal from "./Azure/components/CreateModal";
+import AzureEmptyView from "./Azure/views/EmptyView";
 
 export interface SkinConfig {
 
@@ -50,6 +50,14 @@ const providers: Record<string, SkinConfig> = {
     IndexView: GitHubIndexView,
     RepoView: GitHubRepoView,
     CreateView: GitHubCreateView,
+  },
+  Azure: {
+    routingPreferences: { createAction: 'open_modal' }, // Azure prefers modals for creation
+    Layout: AzureLayout,
+    EmptyView: AzureEmptyView,
+    IndexView: AzureIndexView,
+    RepoView: AzureRepoView,
+    CreateModal: AzureCreateModal,
   }
 };
 

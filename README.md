@@ -218,3 +218,6 @@ git clone https://github.com/user/my-project.git my-clone
 cd my-clone
 ```
 Then `ls` should show the files from the remote.
+
+## Official Azure Icons
+https://learn.microsoft.com/en-us/azure/architecture/icons/
