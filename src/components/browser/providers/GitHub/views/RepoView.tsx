@@ -21,12 +21,12 @@ interface RepoActionButtonProps {
   count: string | number;
 }
 
-const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
+const GithubRepo = () => {
 
   // Get logic, state, and functions from fileExplorer hook.
   const {
     repoName, currentPath, entries, loading, navigateTo,
-    handleNavigateToRoot, handleNavigateToPath, handleFileClick
+    handleNavigateToPath, handleFileClick
   } = useFileExplorer();
 
   return (
