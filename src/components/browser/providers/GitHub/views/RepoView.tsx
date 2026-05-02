@@ -35,12 +35,7 @@ const GithubRepo = ({ onNavigateToIndex }: RepoViewProps) => {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center gap-2 text-xl">
           <Book size={18} className="text-[#8b949e]" />
-          <span className="text-[#58a6ff] hover:underline cursor-pointer" onClick={onNavigateToIndex}>user</span>
-          <span className="text-[#8b949e]">/</span>
-          <span
-            className="font-semibold text-[#58a6ff] hover:underline cursor-pointer"
-            onClick={handleNavigateToRoot}
-          >
+          <span className="font-semibold text-white hover:underline cursor-pointer">
             {repoName}
           </span>
           <span className="px-2 py-0.5 text-xs border border-[#30363d] rounded-full text-[#8b949e]">Public</span>
