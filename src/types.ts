@@ -29,7 +29,9 @@ export interface RouterState {
 export interface SkinLayoutProps {
   children: React.ReactNode;
   currentView: RouterState;
+  onNavigateHome: () => void; // Define 'home' for this provider
 }
+
 
 // Remote Repo Interfaces
 export interface CreateRepoFormProps {

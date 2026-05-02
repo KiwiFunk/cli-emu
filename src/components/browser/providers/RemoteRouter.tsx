@@ -29,7 +29,7 @@ export interface SkinConfig {
   };
 
   // Shell / Persistant UI
-  Layout: React.ElementType<{ children: React.ReactNode, currentView: RouterState }>;
+  Layout: React.ElementType<SkinLayoutProps>;
 
   // Views
   EmptyView: React.ElementType<{ openForm: () => void }>; // Props for empty state (e.g. "Create New Repo" button)
@@ -106,7 +106,7 @@ export default function RemoteRouter() {
   };
 
   return (
-    <Skin.Layout currentView={routerState}>
+    <Skin.Layout currentView={routerState} onNavigateHome={() => navigatePage('INDEX')}>
 
       {/* Views */}
       {routerState.activePage === 'EMPTY' && <Skin.EmptyView openForm={handleNewRepoClick} />}
