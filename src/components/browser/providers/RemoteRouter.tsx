@@ -137,6 +137,7 @@ export default function RemoteRouter() {
           onSubmit={async (name, addReadme) => submitCreateRepo({ name, addReadme })}
           isPending={isCreating}
           error={createError}
+          onClose={closeModal}
         />
       )}
 
