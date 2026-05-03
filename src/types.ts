@@ -38,6 +38,7 @@ export interface CreateRepoFormProps {
   isPending: boolean;     // Indicates if the form submission is in progress
   error: string | null;   // Error message to display, or null if no error
   onSubmit: (name: string, addReadme: boolean) => Promise<void>;
+  onClose?: () => void;   // If opened as a modal, this callback can be used to close
 }
 
 export interface RepoViewProps {
