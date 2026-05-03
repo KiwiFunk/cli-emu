@@ -30,10 +30,7 @@ export default function AzureCreateModal({ onSubmit, isPending, error, onClose }
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const name = formData.get("repoName") as string;
-            const addReadme = formData.get("addReadme") === "on";
-            onSubmit(name, addReadme);
+            onSubmit(repoName, addReadme);
           }}
           className="flex-1 flex flex-col min-h-0"
         >
