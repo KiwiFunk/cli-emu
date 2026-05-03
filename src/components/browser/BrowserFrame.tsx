@@ -116,7 +116,7 @@ function BrowserFrame({ children }: {children: React.ReactNode}) {
       </div>
 
       {/* Content Area */}
-      <div className="bg-white flex-1 overflow-auto text-slate-900">
+      <div className="bg-white flex-1 overflow-auto text-slate-900 relative">
         {childArray[safeIndex]}
       </div>
     </div>
