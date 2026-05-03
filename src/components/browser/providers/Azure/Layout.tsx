@@ -13,7 +13,7 @@ export default function AzureLayout({ children, currentView, onNavigateHome }: S
   const isRepoContext = currentView.activePage === 'REPO';
 
   return (
-    <div className="flex flex-col h-full bg-neutral-100 text-gray-200 font-sans text-sm">
+    <div className="flex flex-col h-full text-gray-200 font-sans text-sm">
 
       {/* Header */}
       <header className="shrink-0 w-full h-[48px] bg-white border-b border-gray-300 flex items-center justify-between px-4 z-10">
@@ -103,7 +103,7 @@ export default function AzureLayout({ children, currentView, onNavigateHome }: S
         </aside>
 
         {/* Page Content */}
-        <main className="flex overflow-auto w-full">
+        <main className="flex overflow-auto w-full bg-neutral-100">
           {children}
         </main>
 
