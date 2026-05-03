@@ -1,6 +1,13 @@
-import { Book, Plus, Funnel } from "lucide-react";
+import { Book, Plus, Funnel, Grid2X2Check, GitBranch, Rocket, FlaskConical, Boxes } from "lucide-react";
 import { useRemoteIndex } from "@/hooks/useRemoteIndex";
 import type { RepoIndexProps } from "@/types";
+
+type RepoItemProps = {
+  name: string;
+  color: string;
+  onClick: () => void;
+  variant?: "list" | "card";
+}
 
 // Determine project icon color (use hash of repo name to have consistent color)
 const ADO_COLORS = ['bg-[#0078D4]', 'bg-[#5C2D91]', 'bg-[#107C41]', 'bg-[#D83B01]', 'bg-[#A80000]', 'bg-[#008272]'];
@@ -64,33 +71,139 @@ export default function AzureIndexView({ onSelectRepo, onNewRepo }: RepoIndexPro
         </div>
       </div>
 
+      {loading ? (
+        <div className="py-12 text-center text-gray-500">
+          Loading projects...
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {/* Recent Activity Cards */}
+          {recentRepos.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentRepos.map((path) => {
+                const name = getDisplayName(path);
+                const color = getProjectColor(name);
 
-      <div className="bg-[#111018] border border-gray-800 rounded-md shadow-sm">
-        {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading...</div>
-        ) : (
-          <div className="divide-y divide-gray-800">
-            {repoPaths.map((path) => (
-              <div
-                key={path}
-                onClick={() => onSelectRepo(path)}
-                className="flex items-center p-4 hover:bg-gray-800 cursor-pointer transition-colors group"
-              >
-                <Book className="text-blue-500 mr-4" size={20} />
-                <div>
-                  <div className="text-blue-500 font-semibold group-hover:underline">
-                    {getDisplayName(path)}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">{path}</div>
-                </div>
-              </div>
-            ))}
-            {repoPaths.length === 0 && (
-              <div className="p-8 text-center text-gray-500">No repositories found.</div>
-            )}
+                return (
+                  <RepoItem
+                    key={path}
+                    name={name}
+                    color={color}
+                    variant="card"
+                    onClick={() => onSelectRepo(path)}
+                  />
+                );
+              })}
+            </div>
+          )}
+          {/* Repo List */}
+          {repoPaths.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-sm shadow-sm divide-y divide-gray-100">
+              {repoPaths.map((path) => {
+                const name = getDisplayName(path);
+                const color = getProjectColor(name);
+
+                return (
+                  <RepoItem
+                    key={path}
+                    name={name}
+                    color={color}
+                    onClick={() => onSelectRepo(path)}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {repoPaths.length === 0 && (
+            <div className="py-20 flex flex-col items-center text-gray-500">
+              <span className="text-lg font-semibold text-gray-700">
+                No match found.
+              </span>
+              <button className="mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-sm text-sm">
+                Reset filter
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RepoItem({
+  name,
+  color,
+  onClick,
+  variant = "list", // "list" | "card"
+}: RepoItemProps) {
+  const initial = name.charAt(0).toUpperCase();
+
+  const isCard = variant === "card";
+
+  return (
+    <div
+      onClick={onClick}
+      className={`
+        group cursor-pointer transition
+        ${isCard
+          ? "bg-white border border-gray-200 rounded-sm shadow-sm hover:shadow-md p-5 flex flex-col h-40"
+          : "flex items-center justify-between p-4 hover:bg-neutral-50"}
+      `}
+    >
+      {/* Left side */}
+      <div className="flex items-center gap-4">
+        <div
+          className={`
+            ${isCard ? "w-12 h-12 text-xl" : "w-10 h-10 text-lg"}
+            ${color}
+            text-white flex items-center justify-center font-semibold rounded-sm shrink-0
+          `}
+        >
+          {initial}
+        </div>
+
+        <div>
+          <div
+            className={`
+              font-semibold text-gray-900 leading-tight transition-colors
+              ${isCard ? "text-[16px] group-hover:text-[#0078D4]" : "text-[15px]"}
+            `}
+          >
+            {name}
           </div>
-        )}
+
+          {/* Repos dont currently store a description
+          <div className="text-[12px] text-gray-500 mt-1 line-clamp-2">
+            {description}
+          </div>
+          */}
+
+        </div>
       </div>
+
+      {/* Action Buttons (+ Hover State) */}
+      <div className={`flex ${variant === 'card' ? 'justify-end mt-auto' : 'gap-6 items-center'}`}>
+          {/* dots */}
+          <div className="flex gap-6 opacity-40 group-hover:hidden">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-gray-400"
+              />
+            ))}
+          </div>
+
+          {/* icons */}
+          <div className="hidden group-hover:flex gap-2">
+            <Grid2X2Check className="w-5 h-5 text-teal-500 stroke-[2.5]" />
+            <GitBranch className="w-5 h-5 text-orange-600 stroke-[2.5]" />
+            <Rocket className="w-5 h-5 text-sky-600 stroke-[2.5]" />
+            <FlaskConical className="w-5 h-5 text-purple-600 stroke-[2.5]" />
+            <Boxes className="w-5 h-5 text-pink-500 stroke-[2.5]" />
+          </div>
+        </div>
+
     </div>
   );
 }
