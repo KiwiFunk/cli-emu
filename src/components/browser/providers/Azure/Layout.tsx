@@ -1,7 +1,9 @@
 import {
-  Search, Plus, Bell, User, Book,
-  Settings, Rocket, LayoutDashboard, ChevronRight,
-  List, ShoppingBag, HelpCircle, UserCog // <-- Add these new ones!
+  Search, Rocket,
+  Grid2X2Check, GitBranch, FlaskConical, Boxes,
+  List, ShoppingBag, HelpCircle, UserCog,
+  FileChartColumnIncreasing,
+  Plus
 } from "lucide-react";
 
 import type { SkinLayoutProps } from "@/types";
@@ -34,9 +36,15 @@ export default function AzureLayout({ children, currentView, onNavigateHome }: S
             Azure DevOps
             </span>
           ) : (
-            <span className="text-neutral-300 font-semibold text-[15px]">
-              {repoName}
-            </span>
+            <>
+              <span className="text-neutral-500 tracking-wide text-sm pl-4">
+                gitsim
+              </span>
+              <span className="text-neutral-500 tracking-wide text-sm px-2">/</span>
+              <span className="text-neutral-500 tracking-wide text-sm">
+                {repoName}
+              </span>
+            </>
           )}
 
         </div>
@@ -76,7 +84,7 @@ export default function AzureLayout({ children, currentView, onNavigateHome }: S
       <div className="flex flex-1 min-h-0 bg-white">
 
         {/* SIDEBAR */}
-        <aside className="w-64 shrink-0 bg-white border-r border-gray-300 flex flex-col py-4">
+        <aside className={`shrink-0 border-r border-gray-300 flex flex-col py-4 ${isRepoContext ? ' bg-neutral-200' : 'w-64 bg-white'}`}>
           {/* Conditionally render depending on rendered page */}
 
           {/* No Project (Repo) - Selected, display organizations  */}
@@ -97,8 +105,19 @@ export default function AzureLayout({ children, currentView, onNavigateHome }: S
 
           {/* Project (Repo) - Selected, display sidebar icons  */}
           {isRepoContext && (
-            <>
-            </>
+            <div className="flex flex-col items-center gap-6 px-4">
+              <div className="w-6 h-6 bg-sky-700 rounded flex items-center justify-center text-white text-xs">
+                G
+              </div>
+              <Plus className="w-5 h-5 text-neutral-400 stroke-[2.5]" />
+              <div className="border-t-2 border-neutral-300 w-full" />
+              <FileChartColumnIncreasing className="w-5 h-5 text-sky-500 stroke-[2.5]" />
+              <Grid2X2Check className="w-5 h-5 text-teal-500 stroke-[2.5]" />
+              <GitBranch className="w-5 h-5 text-orange-600 stroke-[2.5]" />
+              <Rocket className="w-5 h-5 text-sky-600 stroke-[2.5]" />
+              <FlaskConical className="w-5 h-5 text-purple-600 stroke-[2.5]" />
+              <Boxes className="w-5 h-5 text-pink-500 stroke-[2.5]" />
+            </div>
           )}
         </aside>
 
