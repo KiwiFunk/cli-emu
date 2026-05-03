@@ -2,10 +2,24 @@ import { Book, Plus, Funnel } from "lucide-react";
 import { useRemoteIndex } from "@/hooks/useRemoteIndex";
 import type { RepoIndexProps } from "@/types";
 
+// Determine project icon color (use hash of repo name to have consistent color)
+const ADO_COLORS = ['bg-[#0078D4]', 'bg-[#5C2D91]', 'bg-[#107C41]', 'bg-[#D83B01]', 'bg-[#A80000]', 'bg-[#008272]'];
+const getProjectColor = (name: string) => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  // Use modulo to loop within array and return color
+  return ADO_COLORS[Math.abs(hash) % ADO_COLORS.length];
+};
+
 export default function AzureIndexView({ onSelectRepo, onNewRepo }: RepoIndexProps) {
   const { repoPaths, loading } = useRemoteIndex("https://dev.azure.com/user/project");
 
   const getDisplayName = (path: string) => path.split("/").pop()?.replace(".git", "") || path;
+
+  // Extract first 3 repos for recent activity section (can update later)
+  const recentRepos = repoPaths.slice(0, 3);
 
   return (
     <div className="p-8 w-full max-w-6xl mx-auto">
