@@ -3,6 +3,7 @@ import { ls } from "./ls.ts";
 import { mkdir } from "./mkdir.ts";
 import { pwd } from "./pwd.ts";
 import { touch } from "./touch.ts";
+import { cat } from "./cat.ts";
 
 export const shellCommands = {
   "cd": cd,
@@ -10,4 +11,5 @@ export const shellCommands = {
   "mkdir": mkdir,
   "pwd": pwd,
   "touch": touch,
+  "cat": cat,
 };
