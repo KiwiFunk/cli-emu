@@ -18,21 +18,74 @@ export default function AzureRepoView({ onNavigateToIndex }: RepoViewProps) {
         <div className="w-full flex flex-col items-center justify-start gap-6 p-6">
           {/* Repo Empty View - Maybe seperate into its own component? */}
           <div className="w-full">
-            <span className="text-lg text-neutral-800 font-semibold">{repoName} is empty. Add some code!</span>
+            <h2 className="text-lg text-neutral-800 font-semibold">{repoName} is empty. Add some code!</h2>
           </div>
 
-          <div className="bg-white rounded-xs shadow-md w-full p-4">
-            <div className="w-full text-[15px] font-semibold text-neutral-800">Clone to your computer</div>
+          <div className="bg-white rounded-xs shadow-md w-full p-4 flex flex-col gap-2">
+            <h3 className="w-full text-[15px] font-semibold text-neutral-800 mb-2">Clone to your computer</h3>
+
+            <div className="w-full flex flex-row gap-0.5">
+              <span className="flex justify-center items-center w-15 h-8 bg-sky-600 font-semibold text-md text-white">HTTPS</span>
+              <span className="flex justify-center items-center w-15 h-8 bg-neutral-200 font-semibold text-md text-neutral-800">SSH</span>
+              {/* Clone URL */}
+              <span className="border border-neutral-500 w-96 flex items-center px-3">https://dev.azure.com/user/{repoName}</span>
+              <span className="p-2 bg-neutral-200 flex items-center">
+                <Copy size={16} className="text-neutral-600 hover:text-gray-700 cursor-pointer transition-colors" />
+              </span>
+              <span className="px-3 flex items-center font-semibold text-neutral-800 font-lg">OR</span>
+              <span className="px-2 bg-neutral-200 flex items-center gap-2 cursor-pointer">
+                <Copy size={16} className="text-neutral-600 hover:text-gray-700 cursor-pointer transition-colors" />
+                <span className="text-neutral-600 font-semibold">Clone in VS Code</span>
+                <span className="p-[0.25px] h-full bg-neutral-300" />
+                <ChevronDown size={18} className="text-neutral-500" />
+              </span>
+            </div>
+
+            <div className="w-full flex flex-row gap-0.5">
+              <span className="px-2 bg-neutral-200 flex items-center gap-2 cursor-pointer h-8">
+                <span className="text-neutral-600 font-semibold px-2">Generate Git Credentials</span>
+              </span>
+            </div>
+
+            <div className="text-[11px] text-neutral-400"> 🛈 Having problems authenticating in Git? Be sure to get the latest version <span className="text-sky-700">Git for Windows</span> or our plugins for <span className="text-sky-700">IntelliJ, Eclipse, Android Studio</span> or <span className="text-sky-700">Windows command line</span>.</div>
           </div>
 
-          <div className="bg-white rounded-xs shadow-md w-full p-4">
-            <div className="w-full text-[15px] font-semibold text-neutral-800">Push an existing repository from command line</div>
+          <div className="bg-white rounded-xs shadow-md w-full p-4 flex flex-col gap-2">
+            <div className="w-full text-[15px] font-semibold text-neutral-800 mb-2">Push an existing repository from command line</div>
+            <div className="w-full flex flex-row gap-0.5">
+              <span className="flex justify-center items-center w-15 h-8 bg-sky-600 font-semibold text-md text-white">HTTPS</span>
+              <span className="flex justify-center items-center w-15 h-8 bg-neutral-200 font-semibold text-md text-neutral-800">SSH</span>
+            </div>
+            <div className="w-full flex flex-row gap-0.5">
+              <textarea
+                className="w-128 border border-neutral-500 px-3 py-1.5 text-sm text-gray-700 outline-none resize-none"
+                readOnly
+                value={`git remote add origin https://dev.azure.com/user/${repoName}\ngit push -u origin main`}
+              />
+              <span className="p-2 bg-neutral-200 flex items-center h-9">
+                <Copy size={16} className="text-neutral-600 hover:text-gray-700 cursor-pointer transition-colors" />
+              </span>
+            </div>
           </div>
 
-          <div>
+          <div className="bg-white rounded-xs shadow-md w-full p-4 flex flex-col gap-2">
+            <div className="w-full text-[15px] font-semibold text-neutral-800 mb-2">Import a repository</div>
+            <span className="flex justify-center items-center w-15 h-8 bg-neutral-200 font-semibold text-md text-neutral-800">Import</span>
           </div>
 
-          <div>
+          <div className="bg-white rounded-xs shadow-md w-full p-4 flex flex-col gap-2">
+            <div className="w-full text-[15px] font-semibold text-neutral-800 mb-2">Initialize main branch with a README or gitignore</div>
+            <div className="w-full flex flex-row items-center gap-3">
+              <span>
+                <input type="checkbox" id="addreadme" name="addreadme" value="Add README" checked/>
+                <label htmlFor="addreadme" className="text-neutral-700 ml-1"> Add a README</label>
+              </span>
+              <span className="px-3 bg-neutral-200 flex items-center gap-2 cursor-pointer h-full">
+                <span className="text-neutral-500 font-semibold">Add a .gitignore: <span className="font-semibold text-neutral-800">None</span></span>
+                <ChevronDown size={18} className="text-neutral-500" />
+              </span>
+              <span className="flex justify-center items-center px-3 h-8 bg-neutral-200 font-semibold text-md text-neutral-800">Initialize</span>
+            </div>
           </div>
 
         </div>
