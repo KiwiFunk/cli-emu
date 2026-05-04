@@ -6,6 +6,7 @@ import { BrowserTab } from '../browser/BrowserFrame';
 import Challenges from '../browser/Challenges';
 import RemoteRouter from '../browser/providers/RemoteRouter' // For Remote
 import Glossary from '../browser/Glossary';
+import Settings from '../browser/Settings';
 
 import { useAppStore } from '@/store/useAppStore';
 
@@ -34,6 +35,9 @@ function SplitView({ className }: SplitViewProps) {
             </BrowserTab>
             <BrowserTab tabTitle="Glossary">
               <Glossary />
+            </BrowserTab>
+            <BrowserTab tabTitle="Settings">
+              <Settings />
             </BrowserTab>
           </BrowserFrame>
         </Panel>
