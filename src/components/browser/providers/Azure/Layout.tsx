@@ -111,12 +111,12 @@ export default function AzureLayout({ children, currentView, onNavigateHome }: S
               </div>
               <Plus className="w-5 h-5 text-neutral-400 stroke-[2.5]" />
               <div className="border-t-2 border-neutral-300 w-full" />
-              <FileChartColumnIncreasing className="w-5 h-5 text-sky-500 stroke-[2.5]" />
-              <Grid2X2Check className="w-5 h-5 text-teal-500 stroke-[2.5]" />
-              <GitBranch className="w-5 h-5 text-orange-600 stroke-[2.5]" />
-              <Rocket className="w-5 h-5 text-sky-600 stroke-[2.5]" />
-              <FlaskConical className="w-5 h-5 text-purple-600 stroke-[2.5]" />
-              <Boxes className="w-5 h-5 text-pink-500 stroke-[2.5]" />
+              <FileChartColumnIncreasing className="w-5 h-5 text-sky-500 stroke-[2.5] fill-sky-500/40" />
+              <Grid2X2Check className="w-5 h-5 text-teal-500 stroke-[2.5] fill-teal-500/40" />
+              <GitBranch className="w-5 h-5 text-orange-600 stroke-[2.5] fill-orange-600/40" />
+              <Rocket className="w-5 h-5 text-sky-600 stroke-[2.5] fill-sky-600/60" />
+              <FlaskConical className="w-5 h-5 text-purple-600 stroke-[2.5] fill-purple-600/40" />
+              <Boxes className="w-5 h-5 text-pink-500 stroke-[2.5] fill-pink-500/40" />
             </div>
           )}
         </aside>
