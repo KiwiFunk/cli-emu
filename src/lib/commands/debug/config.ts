@@ -5,7 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 /**
  * Safely updates or retrieves values from the emulator's /config.json file
  */
-export async function configCmd(ctx: CommandContext): Promise<string> {
+export async function config(ctx: CommandContext): Promise<string> {
   const { args } = ctx;
 
   if (args.length === 0) {
